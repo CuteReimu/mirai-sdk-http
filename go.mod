@@ -1,4 +1,4 @@
-module github.com/CuteReimu/mirai-api-http
+module github.com/CuteReimu/mirai-sdk-http
 
 go 1.21
 

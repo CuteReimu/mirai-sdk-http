@@ -1,9 +1,9 @@
 # mirai-api-http的Go SDK
 
-![](https://img.shields.io/github/languages/top/CuteReimu/mirai-api-http "语言")
-[![](https://img.shields.io/github/actions/workflow/status/CuteReimu/mirai-api-http/golangci-lint.yml?branch=master)](https://github.com/CuteReimu/mirai-api-http/actions/workflows/golangci-lint.yml "代码分析")
-[![](https://img.shields.io/github/contributors/CuteReimu/mirai-api-http)](https://github.com/CuteReimu/mirai-api-http/graphs/contributors "贡献者")
-[![](https://img.shields.io/github/license/CuteReimu/mirai-api-http)](https://github.com/CuteReimu/mirai-api-http/blob/master/LICENSE "许可协议")
+![](https://img.shields.io/github/languages/top/CuteReimu/mirai-sdk-http "语言")
+[![](https://img.shields.io/github/actions/workflow/status/CuteReimu/mirai-sdk-http/golangci-lint.yml?branch=master)](https://github.com/CuteReimu/mirai-sdk-http/actions/workflows/golangci-lint.yml "代码分析")
+[![](https://img.shields.io/github/contributors/CuteReimu/mirai-sdk-http)](https://github.com/CuteReimu/mirai-sdk-http/graphs/contributors "贡献者")
+[![](https://img.shields.io/github/license/CuteReimu/mirai-sdk-http)](https://github.com/CuteReimu/mirai-sdk-http/blob/master/LICENSE "许可协议")
 
 这是针对[mirai-api-http](https://github.com/project-mirai/mirai-api-http)编写的Go SDK。
 
@@ -34,7 +34,7 @@ adapterSettings:
 引入项目：
 
 ```bash
-go get -u github.com/CuteReimu/mirai-api-http
+go get -u github.com/CuteReimu/mirai-sdk-http
 ```
 
 举例：
@@ -43,8 +43,8 @@ go get -u github.com/CuteReimu/mirai-api-http
 package main
 
 import (
-    "github.com/CuteReimu/mirai-api-http"
-    "github.com/CuteReimu/mirai-api-http/message"
+    "github.com/CuteReimu/mirai-sdk-http"
+    "github.com/CuteReimu/mirai-sdk-http/message"
 )
 
 func main() {

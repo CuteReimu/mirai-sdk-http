@@ -3,7 +3,7 @@ package miraihttp
 import (
 	"encoding/json"
 	"fmt"
-	"github.com/CuteReimu/mirai-api-http/utils"
+	"github.com/CuteReimu/mirai-sdk-http/utils"
 	"github.com/gorilla/websocket"
 	"sync/atomic"
 )
@@ -14,11 +14,17 @@ var log = utils.GetModuleLogger("miraihttp")
 type WsChannel string
 
 const (
-	WsChannelMessage = "message" // 推送消息
-	WsChannelEvent   = "event"   // 推送事件
-	WsChannelAll     = "all"     // 推送消息及事件
+	// WsChannelMessage 推送消息
+	WsChannelMessage = "message"
+
+	// WsChannelEvent 推送事件
+	WsChannelEvent = "event"
+
+	// WsChannelAll 推送消息及事件
+	WsChannelAll = "all"
 )
 
+// Connect 连接mirai-api-http
 func Connect(host string, port int, channel WsChannel, verifyKey string, qq int64) (*Bot, error) {
 	addr := fmt.Sprintf("ws://%s:%d/%s?verifyKey=%s&qq=%d", host, port, channel, verifyKey, qq)
 	c, _, err := websocket.DefaultDialer.Dial(addr, nil)
@@ -53,6 +59,7 @@ type SubMessage interface {
 	GetSubCommand() string
 }
 
+// WriteMessage 发送请求
 func (b *Bot) WriteMessage(m Request) {
 	msg := &requestMessage{
 		SyncId:  b.syncId.Add(1),
