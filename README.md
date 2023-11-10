@@ -37,23 +37,8 @@ adapterSettings:
 go get -u github.com/CuteReimu/mirai-sdk-http
 ```
 
-举例：
+关于如何使用，可以参考`examples`文件夹下的例子
 
-```go
-package main
+## 注意事项
 
-import (
-    "github.com/CuteReimu/mirai-sdk-http"
-    "github.com/CuteReimu/mirai-sdk-http/message"
-)
-
-func main() {
-    b, _ := miraihttp.Connect("localhost", 8080, miraihttp.WsChannelAll, "ABCDEFGHIJK", 123456789)
-    b.WriteMessage(&message.SendGroupMessage{
-        Target: 987654321,
-        MessageChain: message.Chain{
-            (&message.Plain{Text: "Mirai牛逼"}).toMap(),
-        },
-    })
-}
-```
+所有`ListenXXXXXX`函数之间都不支持并发，你可以在启动机器人的情况下调用这些函数，但是不要同时在多个协程调用这些函数。~~（不过在一般情况下确实不会有这种奇怪的需求）~~

@@ -5,6 +5,8 @@ import (
 	"fmt"
 	"github.com/CuteReimu/mirai-sdk-http/utils"
 	"github.com/gorilla/websocket"
+	"github.com/tidwall/gjson"
+	"sync"
 	"sync/atomic"
 )
 
@@ -15,7 +17,7 @@ type WsChannel string
 
 const (
 	// WsChannelMessage 推送消息
-	WsChannelMessage = "message"
+	WsChannelMessage = "model"
 
 	// WsChannelEvent 推送事件
 	WsChannelEvent = "event"
@@ -31,6 +33,7 @@ func Connect(host string, port int, channel WsChannel, verifyKey string, qq int6
 	if err != nil {
 		return nil, err
 	}
+	b := &Bot{c: c, QQ: qq}
 	go func() {
 		for {
 			_, message, err := c.ReadMessage()
@@ -39,15 +42,32 @@ func Connect(host string, port int, channel WsChannel, verifyKey string, qq int6
 				return
 			}
 			log.Debugf("recv: %s\n", message)
+			if !gjson.ValidBytes(message) {
+				log.Errorln("invalid json message")
+				continue
+			}
+			messageType := gjson.GetBytes(message, "type").String()
+			if f, ok := b.handler.Load(messageType); ok {
+				if p := parser[messageType]; p != nil {
+					if m := p(message); m != nil {
+						for _, handler := range f.([]ListenMessageHandler) {
+							if !handler(m) {
+								break
+							}
+						}
+					}
+				}
+			}
 		}
 	}()
-	return &Bot{c: c, QQ: qq}, nil
+	return b, nil
 }
 
 type Bot struct {
-	QQ     int64
-	c      *websocket.Conn
-	syncId atomic.Int64
+	QQ      int64
+	c       *websocket.Conn
+	syncId  atomic.Int64
+	handler sync.Map
 }
 
 type Request interface {
@@ -87,4 +107,19 @@ type requestMessage struct {
 	Command    string `json:"command"`
 	SubCommand string `json:"subCommand,omitempty"`
 	Content    any    `json:"content,omitempty"`
+}
+
+var parser = make(map[string]func(message []byte) any)
+
+type ListenMessageHandler func(any) bool
+
+func listenMessage[M any](b *Bot, key string, l func(M) bool) {
+	var fs []ListenMessageHandler
+	if f, ok := b.handler.Load(key); ok {
+		fs = f.([]ListenMessageHandler)
+	}
+	fs = append(fs, func(m any) bool {
+		return l(m.(M))
+	})
+	b.handler.Store(key, fs)
 }
