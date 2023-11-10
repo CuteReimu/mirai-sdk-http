@@ -156,11 +156,11 @@ type PokeName string
 
 const (
 	PokeNamePoke        PokeName = "Poke"        // 戳一戳
-	PokeNameShowLove             = "ShowLove"    // 比心
-	PokeNameLike                 = "Like"        // 点赞
-	PokeNameHeartbroken          = "Heartbroken" // 心碎
-	PokeNameSixSixSix            = "SixSixSix"   // 666
-	PokeNameFangDaZhao           = "FangDaZhao"  // 放大招
+	PokeNameShowLove    PokeName = "ShowLove"    // 比心
+	PokeNameLike        PokeName = "Like"        // 点赞
+	PokeNameHeartbroken PokeName = "Heartbroken" // 心碎
+	PokeNameSixSixSix   PokeName = "SixSixSix"   // 666
+	PokeNameFangDaZhao  PokeName = "FangDaZhao"  // 放大招
 )
 
 // Poke 戳一戳
