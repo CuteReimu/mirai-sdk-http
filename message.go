@@ -3,18 +3,16 @@ package miraihttp
 import (
 	"encoding/json"
 	"github.com/tidwall/gjson"
-	"reflect"
 )
 
 type SingleMessage interface {
-	GetMessageType() string
+	FillMessageType()
 }
 
 // MessageChain 构建 MessageChain ，自动填上每个元素的Type字段
 func MessageChain(messages ...SingleMessage) []SingleMessage {
 	for _, m := range messages {
-		v := reflect.ValueOf(m).Elem()
-		v.FieldByName("Type").SetString(m.GetMessageType())
+		m.FillMessageType()
 	}
 	return messages
 }
@@ -26,8 +24,8 @@ type Source struct {
 	Time int64  `json:"time"` // 时间戳
 }
 
-func (m *Source) GetMessageType() string {
-	return "Source"
+func (m *Source) FillMessageType() {
+	m.Type = "Source"
 }
 
 // Quote 引用回复
@@ -40,8 +38,8 @@ type Quote struct {
 	Origin   []any  `json:"origin"`   // 被引用回复的原消息的消息链对象
 }
 
-func (m *Quote) GetMessageType() string {
-	return "Quote"
+func (m *Quote) FillMessageType() {
+	m.Type = "Quote"
 }
 
 // At @消息
@@ -51,8 +49,8 @@ type At struct {
 	Display string `json:"display,omitempty"` // At时显示的文字，发送消息时无效，自动使用群名片
 }
 
-func (m *At) GetMessageType() string {
-	return "At"
+func (m *At) FillMessageType() {
+	m.Type = "At"
 }
 
 // AtAll @全体消息
@@ -60,18 +58,19 @@ type AtAll struct {
 	Type string `json:"type"`
 }
 
-func (m *AtAll) GetMessageType() string {
-	return "AtAll"
+func (m *AtAll) FillMessageType() {
+	m.Type = "AtAll"
 }
 
 // Face QQ表情
 type Face struct {
+	Type   string `json:"type"`
 	FaceId int32  `json:"faceId,omitempty"` // QQ表情编号，可选，优先高于name
 	Name   string `json:"name,omitempty"`   // QQ表情拼音，可选
 }
 
-func (m *Face) GetMessageType() string {
-	return "Face"
+func (m *Face) FillMessageType() {
+	m.Type = "Face"
 }
 
 // Plain 文字消息
@@ -80,8 +79,8 @@ type Plain struct {
 	Text string `json:"text"` // 文字消息
 }
 
-func (m *Plain) GetMessageType() string {
-	return "Plain"
+func (m *Plain) FillMessageType() {
+	m.Type = "Plain"
 }
 
 // Image 图片（参数优先级imageId > url > path > base64）
@@ -93,8 +92,8 @@ type Image struct {
 	Base64  string `json:"base64,omitempty"`  // 图片的 Base64 编码
 }
 
-func (m *Image) GetMessageType() string {
-	return "Image"
+func (m *Image) FillMessageType() {
+	m.Type = "Image"
 }
 
 // FlashImage 闪照，参数同Image
@@ -106,8 +105,8 @@ type FlashImage struct {
 	Base64  string `json:"base64,omitempty"`
 }
 
-func (m *FlashImage) GetMessageType() string {
-	return "FlashImage"
+func (m *FlashImage) FillMessageType() {
+	m.Type = "FlashImage"
 }
 
 // Voice 语音（参数优先级imageId > url > path > base64）
@@ -120,8 +119,8 @@ type Voice struct {
 	Length  string `json:"length,omitempty"`  // 返回的语音长度, 发送消息时可以不传
 }
 
-func (m *Voice) GetMessageType() string {
-	return "Voice"
+func (m *Voice) FillMessageType() {
+	m.Type = "Voice"
 }
 
 type Xml struct {
@@ -129,8 +128,8 @@ type Xml struct {
 	Xml  string `json:"xml"` // XML文本
 }
 
-func (m *Xml) GetMessageType() string {
-	return "Xml"
+func (m *Xml) FillMessageType() {
+	m.Type = "Xml"
 }
 
 type Json struct {
@@ -138,8 +137,8 @@ type Json struct {
 	Json string `json:"json"` // Json文本
 }
 
-func (m *Json) GetMessageType() string {
-	return "Json"
+func (m *Json) FillMessageType() {
+	m.Type = "Json"
 }
 
 type App struct {
@@ -147,8 +146,8 @@ type App struct {
 	Content string `json:"content"` // 内容
 }
 
-func (m *App) GetMessageType() string {
-	return "App"
+func (m *App) FillMessageType() {
+	m.Type = "App"
 }
 
 // PokeName 戳一戳的类型
@@ -169,8 +168,8 @@ type Poke struct {
 	Name PokeName `json:"name"` // 戳一戳的类型
 }
 
-func (m *Poke) GetMessageType() string {
-	return "Poke"
+func (m *Poke) FillMessageType() {
+	m.Type = "Poke"
 }
 
 // Dice 骰子
@@ -179,8 +178,8 @@ type Dice struct {
 	Value int32  `json:"value"` // 点数
 }
 
-func (m *Dice) GetMessageType() string {
-	return "Dice"
+func (m *Dice) FillMessageType() {
+	m.Type = "Dice"
 }
 
 // MarketFace 商城表情（目前商城表情仅支持接收和转发，不支持构造发送）
@@ -190,8 +189,8 @@ type MarketFace struct {
 	Name string `json:"name"` // 表情显示名称
 }
 
-func (m *MarketFace) GetMessageType() string {
-	return "MarketFace"
+func (m *MarketFace) FillMessageType() {
+	m.Type = "MarketFace"
 }
 
 // MusicShare 音乐分享
@@ -206,8 +205,8 @@ type MusicShare struct {
 	Brief      string `json:"brief"`      // 简介
 }
 
-func (m *MusicShare) GetMessageType() string {
-	return "MusicShare"
+func (m *MusicShare) FillMessageType() {
+	m.Type = "MusicShare"
 }
 
 type ForwardMessageNode struct {
@@ -238,8 +237,8 @@ type ForwardMessage struct {
 	NodeList []*ForwardMessageNode `json:"nodeList"` // 消息节点
 }
 
-func (m *ForwardMessage) GetMessageType() string {
-	return "ForwardMessage"
+func (m *ForwardMessage) FillMessageType() {
+	m.Type = "ForwardMessage"
 }
 
 // File 文件
@@ -250,8 +249,8 @@ type File struct {
 	Size int64  `json:"size"` // 文件大小
 }
 
-func (m *File) GetMessageType() string {
-	return "File"
+func (m *File) FillMessageType() {
+	m.Type = "File"
 }
 
 type MiraiCode struct {
@@ -259,8 +258,8 @@ type MiraiCode struct {
 	Code string `json:"code"`
 }
 
-func (m *MiraiCode) GetMessageType() string {
-	return "MiraiCode"
+func (m *MiraiCode) FillMessageType() {
+	m.Type = "MiraiCode"
 }
 
 var singleMessageBuilder = map[string]func() SingleMessage{

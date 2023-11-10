@@ -21,7 +21,7 @@ type FriendMessage struct {
 	MessageChain []SingleMessage
 }
 
-func (b *Bot) ListenFriendMessage(l func(*FriendMessage) bool) {
+func (b *Bot) ListenFriendMessage(l func(syncId string, message *FriendMessage) bool) {
 	listenMessage(b, "FriendMessage", l)
 }
 
@@ -62,7 +62,7 @@ type GroupMessage struct {
 	MessageChain []SingleMessage
 }
 
-func (b *Bot) ListenGroupMessage(l func(*GroupMessage) bool) {
+func (b *Bot) ListenGroupMessage(l func(syncId string, message *GroupMessage) bool) {
 	listenMessage(b, "GroupMessage", l)
 }
 

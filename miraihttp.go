@@ -29,10 +29,12 @@ const (
 // Connect 连接mirai-api-http
 func Connect(host string, port int, channel WsChannel, verifyKey string, qq int64) (*Bot, error) {
 	addr := fmt.Sprintf("ws://%s:%d/%s?verifyKey=%s&qq=%d", host, port, channel, verifyKey, qq)
+	log.Infoln("Dialing", addr)
 	c, _, err := websocket.DefaultDialer.Dial(addr, nil)
 	if err != nil {
 		return nil, err
 	}
+	log.Infoln("Connected successfully")
 	b := &Bot{c: c, QQ: qq}
 	go func() {
 		for {
@@ -43,17 +45,23 @@ func Connect(host string, port int, channel WsChannel, verifyKey string, qq int6
 			}
 			log.Debugf("recv: %s\n", message)
 			if !gjson.ValidBytes(message) {
-				log.Errorln("invalid json message")
+				log.Errorln("invalid json message: ", string(message))
 				continue
 			}
-			messageType := gjson.GetBytes(message, "type").String()
+			syncId := gjson.GetBytes(message, "syncId").String()
+			data := gjson.GetBytes(message, "data")
+			if data.Type != gjson.JSON {
+				log.Errorln("invalid json message: ", string(message))
+				continue
+			}
+			messageType := data.Get("type").String()
 			if f, ok := b.handler.Load(messageType); ok {
-				if p := parser[messageType]; p != nil {
-					if m := p(message); m != nil {
-						for _, handler := range f.([]ListenMessageHandler) {
-							if !handler(m) {
-								break
-							}
+				if p := parser[messageType]; p == nil {
+					log.Errorln("cannot find message parser:", messageType)
+				} else if m := p([]byte(data.Raw)); m != nil {
+					for _, handler := range f.([]ListenMessageHandler) {
+						if !handler(syncId, m) {
+							break
 						}
 					}
 				}
@@ -80,7 +88,7 @@ type SubMessage interface {
 }
 
 // WriteMessage 发送请求
-func (b *Bot) WriteMessage(m Request) {
+func (b *Bot) WriteMessage(m Request) (syncId int64) {
 	msg := &requestMessage{
 		SyncId:  b.syncId.Add(1),
 		Command: m.GetCommand(),
@@ -92,14 +100,15 @@ func (b *Bot) WriteMessage(m Request) {
 	buf, err := json.Marshal(msg)
 	if err != nil {
 		log.Errorln("json marshal failed:", err)
-		return
+		return -1
 	}
 	err = b.c.WriteMessage(websocket.TextMessage, buf)
 	if err != nil {
 		log.Errorln("write err:", err)
-		return
+		return -1
 	}
 	log.Debugf("write: %s\n", string(buf))
+	return msg.SyncId
 }
 
 type requestMessage struct {
@@ -111,15 +120,15 @@ type requestMessage struct {
 
 var parser = make(map[string]func(message []byte) any)
 
-type ListenMessageHandler func(any) bool
+type ListenMessageHandler func(syncId string, message any) bool
 
-func listenMessage[M any](b *Bot, key string, l func(M) bool) {
+func listenMessage[M any](b *Bot, key string, l func(syncId string, message M) bool) {
 	var fs []ListenMessageHandler
 	if f, ok := b.handler.Load(key); ok {
 		fs = f.([]ListenMessageHandler)
 	}
-	fs = append(fs, func(m any) bool {
-		return l(m.(M))
+	fs = append(fs, func(syncId string, m any) bool {
+		return l(syncId, m.(M))
 	})
 	b.handler.Store(key, fs)
 }
