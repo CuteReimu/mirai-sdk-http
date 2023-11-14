@@ -138,6 +138,7 @@ func (b *Bot) RoamingMessages(timeStart, timeEnd, target int64) ([]any, error) {
 		if p := decoder[messageType]; p != nil {
 			if m := p([]byte(data.Raw)); m != nil {
 				retArray = append(retArray, m)
+				continue
 			}
 		}
 		e := fmt.Sprint("decode message failed:", data.Raw)
