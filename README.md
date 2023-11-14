@@ -70,7 +70,7 @@ go get -u github.com/CuteReimu/mirai-sdk-http
   - [ ] 文件操作
   - [ ] 多媒体内容上传
   - [ ] 账号管理
-  - [ ] 群管理
+  - [x] 群管理
   - [ ] 群公告
   - [ ] 事件处理
   - [ ] Console命令
