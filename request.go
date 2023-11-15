@@ -47,7 +47,7 @@ func (b *Bot) MessageFromId(messageId, target int64) (any, error) {
 	}
 	messageType := data.Get("type").String()
 	if p := decoder[messageType]; p != nil {
-		if m := p([]byte(data.Raw)); m != nil {
+		if m := p(data); m != nil {
 			return m, nil
 		}
 	}
@@ -137,7 +137,7 @@ func (b *Bot) RoamingMessages(timeStart, timeEnd, qq int64) ([]any, error) {
 		}
 		messageType := data.Get("type").String()
 		if p := decoder[messageType]; p != nil {
-			if m := p([]byte(data.Raw)); m != nil {
+			if m := p(data); m != nil {
 				retArray = append(retArray, m)
 				continue
 			}

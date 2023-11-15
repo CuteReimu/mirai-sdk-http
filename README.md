@@ -59,7 +59,7 @@ go get -u github.com/CuteReimu/mirai-sdk-http
   - [ ] Bot自身事件
   - [ ] 好友事件
   - [ ] 群事件
-  - [ ] 申请事件
+  - [x] 申请事件
   - [ ] 其它客户端事件
   - [ ] 命令事件
 - 请求

@@ -75,8 +75,8 @@ func Connect(host string, port int, channel WsChannel, verifyKey string, qq int6
 			}
 			if len(syncId) > 0 && syncId[0] != '-' {
 				if ch, ok := b.syncIdMap.LoadAndDelete(syncId); ok {
-					ch0 := ch.(chan *gjson.Result)
-					ch0 <- &data
+					ch0 := ch.(chan gjson.Result)
+					ch0 <- data
 					close(ch0)
 				}
 				continue
@@ -85,7 +85,7 @@ func Connect(host string, port int, channel WsChannel, verifyKey string, qq int6
 			if f, ok := b.handler.Load(messageType); ok {
 				if p := decoder[messageType]; p == nil {
 					log.Errorln("cannot find message decoder:", messageType)
-				} else if m := p([]byte(data.Raw)); m != nil {
+				} else if m := p(data); m != nil {
 					fun := func() {
 						defer func() {
 							if r := recover(); r != nil {
@@ -120,7 +120,7 @@ type Bot struct {
 }
 
 // request 发送请求
-func (b *Bot) request(command, subCommand string, m any) (*gjson.Result, error) {
+func (b *Bot) request(command, subCommand string, m any) (gjson.Result, error) {
 	msg := &requestMessage{
 		SyncId:     b.syncId.Add(1),
 		Command:    command,
@@ -131,31 +131,31 @@ func (b *Bot) request(command, subCommand string, m any) (*gjson.Result, error) 
 	buf, err := json.Marshal(msg)
 	if err != nil {
 		log.Errorln("json marshal failed:", err)
-		return nil, err
+		return gjson.Result{}, err
 	}
-	ch := make(chan *gjson.Result, 1)
+	ch := make(chan gjson.Result, 1)
 	b.syncIdMap.Store(syncId, ch)
 	err = b.c.WriteMessage(websocket.TextMessage, buf)
 	if err != nil {
 		log.Errorln("write err:", err)
-		return nil, err
+		return gjson.Result{}, err
 	}
 	log.Debugf("write: %s\n", string(buf))
 	time.AfterFunc(5*time.Second, func() {
 		if ch, ok := b.syncIdMap.LoadAndDelete(syncId); ok {
-			close(ch.(chan *gjson.Result))
+			close(ch.(chan gjson.Result))
 		}
 	})
 	result, ok := <-ch
 	if !ok {
 		log.Errorln("request timeout")
-		return nil, errors.New("request timeout")
+		return gjson.Result{}, errors.New("request timeout")
 	}
 	code := result.Get("code").Int()
 	if code != 0 {
 		e := fmt.Sprint("Non-zero code: ", code, ", error message: ", result.Get("msg"))
 		log.Errorln(e)
-		return nil, errors.New(e)
+		return gjson.Result{}, errors.New(e)
 	}
 	return result, nil
 }
@@ -167,7 +167,7 @@ type requestMessage struct {
 	Content    any    `json:"content,omitempty"`
 }
 
-var decoder = make(map[string]func(message []byte) any)
+var decoder = make(map[string]func(data gjson.Result) any)
 
 type listenHandler func(message any) bool
 

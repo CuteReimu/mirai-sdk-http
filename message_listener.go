@@ -17,13 +17,6 @@ func init() {
 	decoder["StrangerSyncMessage"] = parseStrangerSyncMessage
 }
 
-// Friend 好友
-type Friend struct {
-	Id       int64  `json:"id"`
-	Nickname string `json:"nickname"`
-	Remark   string `json:"remark"`
-}
-
 // FriendMessage 好友消息
 type FriendMessage struct {
 	Sender       Friend
@@ -35,8 +28,8 @@ func (b *Bot) ListenFriendMessage(l func(message *FriendMessage) bool) {
 	listen(b, "FriendMessage", l)
 }
 
-func parseFriendMessage(message []byte) any {
-	sender := gjson.GetBytes(message, "sender")
+func parseFriendMessage(data gjson.Result) any {
+	sender := data.Get("sender")
 	if sender.Type != gjson.JSON {
 		log.Errorln("sender is invalid: ", sender)
 		return nil
@@ -46,27 +39,8 @@ func parseFriendMessage(message []byte) any {
 		log.Errorln("json unmarshal failed: ", err)
 		return nil
 	}
-	m.MessageChain = parseMessageChain(gjson.GetBytes(message, "messageChain").Array())
+	m.MessageChain = parseMessageChain(data.Get("messageChain").Array())
 	return m
-}
-
-// Group 群
-type Group struct {
-	Id         int64  `json:"id"`
-	Name       string `json:"name"`
-	Permission Perm   `json:"permission"`
-}
-
-// Member 群成员
-type Member struct {
-	Id                 int64  `json:"id"`
-	MemberName         string `json:"memberName"`
-	SpecialTitle       string `json:"specialTitle"`
-	Permission         Perm   `json:"permission"`
-	JoinTimestamp      int64  `json:"joinTimestamp"`
-	LastSpeakTimestamp int64  `json:"lastSpeakTimestamp"`
-	MuteTimeRemaining  int64  `json:"muteTimeRemaining"`
-	Group              Group  `json:"group"`
 }
 
 // GroupMessage 群消息
@@ -80,8 +54,8 @@ func (b *Bot) ListenGroupMessage(l func(message *GroupMessage) bool) {
 	listen(b, "GroupMessage", l)
 }
 
-func parseGroupMessage(message []byte) any {
-	sender := gjson.GetBytes(message, "sender")
+func parseGroupMessage(data gjson.Result) any {
+	sender := data.Get("sender")
 	if sender.Type != gjson.JSON {
 		log.Errorln("sender is invalid: ", sender)
 		return nil
@@ -91,7 +65,7 @@ func parseGroupMessage(message []byte) any {
 		log.Errorln("json unmarshal failed: ", err)
 		return nil
 	}
-	m.MessageChain = parseMessageChain(gjson.GetBytes(message, "messageChain").Array())
+	m.MessageChain = parseMessageChain(data.Get("messageChain").Array())
 	return m
 }
 
@@ -106,8 +80,8 @@ func (b *Bot) ListenTempMessage(l func(message *TempMessage) bool) {
 	listen(b, "TempMessage", l)
 }
 
-func parseTempMessage(message []byte) any {
-	sender := gjson.GetBytes(message, "sender")
+func parseTempMessage(data gjson.Result) any {
+	sender := data.Get("sender")
 	if sender.Type != gjson.JSON {
 		log.Errorln("sender is invalid: ", sender)
 		return nil
@@ -117,7 +91,7 @@ func parseTempMessage(message []byte) any {
 		log.Errorln("json unmarshal failed: ", err)
 		return nil
 	}
-	m.MessageChain = parseMessageChain(gjson.GetBytes(message, "messageChain").Array())
+	m.MessageChain = parseMessageChain(data.Get("messageChain").Array())
 	return m
 }
 
@@ -132,8 +106,8 @@ func (b *Bot) ListenStrangerMessage(l func(message *StrangerMessage) bool) {
 	listen(b, "StrangerMessage", l)
 }
 
-func parseStrangerMessage(message []byte) any {
-	sender := gjson.GetBytes(message, "sender")
+func parseStrangerMessage(data gjson.Result) any {
+	sender := data.Get("sender")
 	if sender.Type != gjson.JSON {
 		log.Errorln("sender is invalid: ", sender)
 		return nil
@@ -143,7 +117,7 @@ func parseStrangerMessage(message []byte) any {
 		log.Errorln("json unmarshal failed: ", err)
 		return nil
 	}
-	m.MessageChain = parseMessageChain(gjson.GetBytes(message, "messageChain").Array())
+	m.MessageChain = parseMessageChain(data.Get("messageChain").Array())
 	return m
 }
 
@@ -163,8 +137,8 @@ func (b *Bot) ListenOtherClientMessage(l func(message *OtherClientMessage) bool)
 	listen(b, "OtherClientMessage", l)
 }
 
-func parseOtherClientMessage(message []byte) any {
-	sender := gjson.GetBytes(message, "sender")
+func parseOtherClientMessage(data gjson.Result) any {
+	sender := data.Get("sender")
 	if sender.Type != gjson.JSON {
 		log.Errorln("sender is invalid: ", sender)
 		return nil
@@ -174,7 +148,7 @@ func parseOtherClientMessage(message []byte) any {
 		log.Errorln("json unmarshal failed: ", err)
 		return nil
 	}
-	m.MessageChain = parseMessageChain(gjson.GetBytes(message, "messageChain").Array())
+	m.MessageChain = parseMessageChain(data.Get("messageChain").Array())
 	return m
 }
 
@@ -189,8 +163,8 @@ func (b *Bot) ListenFriendSyncMessage(l func(message *FriendSyncMessage) bool) {
 	listen(b, "FriendSyncMessage", l)
 }
 
-func parseFriendSyncMessage(message []byte) any {
-	sender := gjson.GetBytes(message, "subject")
+func parseFriendSyncMessage(data gjson.Result) any {
+	sender := data.Get("subject")
 	if sender.Type != gjson.JSON {
 		log.Errorln("sender is invalid: ", sender)
 		return nil
@@ -200,7 +174,7 @@ func parseFriendSyncMessage(message []byte) any {
 		log.Errorln("json unmarshal failed: ", err)
 		return nil
 	}
-	m.MessageChain = parseMessageChain(gjson.GetBytes(message, "messageChain").Array())
+	m.MessageChain = parseMessageChain(data.Get("messageChain").Array())
 	return m
 }
 
@@ -215,8 +189,8 @@ func (b *Bot) ListenGroupSyncMessage(l func(message *GroupSyncMessage) bool) {
 	listen(b, "GroupSyncMessage", l)
 }
 
-func parseGroupSyncMessage(message []byte) any {
-	sender := gjson.GetBytes(message, "subject")
+func parseGroupSyncMessage(data gjson.Result) any {
+	sender := data.Get("subject")
 	if sender.Type != gjson.JSON {
 		log.Errorln("sender is invalid: ", sender)
 		return nil
@@ -226,7 +200,7 @@ func parseGroupSyncMessage(message []byte) any {
 		log.Errorln("json unmarshal failed: ", err)
 		return nil
 	}
-	m.MessageChain = parseMessageChain(gjson.GetBytes(message, "messageChain").Array())
+	m.MessageChain = parseMessageChain(data.Get("messageChain").Array())
 	return m
 }
 
@@ -241,8 +215,8 @@ func (b *Bot) ListenTempSyncMessage(l func(message *TempSyncMessage) bool) {
 	listen(b, "TempSyncMessage", l)
 }
 
-func parseTempSyncMessage(message []byte) any {
-	sender := gjson.GetBytes(message, "subject")
+func parseTempSyncMessage(data gjson.Result) any {
+	sender := data.Get("subject")
 	if sender.Type != gjson.JSON {
 		log.Errorln("sender is invalid: ", sender)
 		return nil
@@ -252,7 +226,7 @@ func parseTempSyncMessage(message []byte) any {
 		log.Errorln("json unmarshal failed: ", err)
 		return nil
 	}
-	m.MessageChain = parseMessageChain(gjson.GetBytes(message, "messageChain").Array())
+	m.MessageChain = parseMessageChain(data.Get("messageChain").Array())
 	return m
 }
 
@@ -267,8 +241,8 @@ func (b *Bot) ListenStrangerSyncMessage(l func(message *StrangerSyncMessage) boo
 	listen(b, "StrangerSyncMessage", l)
 }
 
-func parseStrangerSyncMessage(message []byte) any {
-	sender := gjson.GetBytes(message, "subject")
+func parseStrangerSyncMessage(data gjson.Result) any {
+	sender := data.Get("subject")
 	if sender.Type != gjson.JSON {
 		log.Errorln("sender is invalid: ", sender)
 		return nil
@@ -278,6 +252,6 @@ func parseStrangerSyncMessage(message []byte) any {
 		log.Errorln("json unmarshal failed: ", err)
 		return nil
 	}
-	m.MessageChain = parseMessageChain(gjson.GetBytes(message, "messageChain").Array())
+	m.MessageChain = parseMessageChain(data.Get("messageChain").Array())
 	return m
 }
