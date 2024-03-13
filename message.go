@@ -3,6 +3,7 @@ package miraihttp
 import (
 	"encoding/json"
 	"github.com/tidwall/gjson"
+	"log/slog"
 )
 
 type SingleMessage interface {
@@ -291,7 +292,7 @@ func parseMessageChain(results []gjson.Result) []SingleMessage {
 	ret := make([]SingleMessage, 0, len(results))
 	for i := range results {
 		if results[i].Type != gjson.JSON {
-			log.Errorln("single message is not json: ", results[i].Type)
+			slog.Error("single message is not json: " + results[i].Type.String())
 			continue
 		}
 		singleMessageType := results[i].Get("type").String()
@@ -300,10 +301,10 @@ func parseMessageChain(results []gjson.Result) []SingleMessage {
 			if err := json.Unmarshal([]byte(results[i].Raw), m); err == nil {
 				ret = append(ret, m)
 			} else {
-				log.Errorln("json unmarshal failed: ", results[i].Raw, " , error: ", err)
+				slog.Error("json unmarshal failed", "buf", results[i].Raw, "error", err)
 			}
 		} else {
-			log.Errorln("unknown single message type: ", results[i])
+			slog.Error("unknown single message type: " + results[i].String())
 		}
 	}
 	return ret

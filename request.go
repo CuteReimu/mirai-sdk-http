@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"github.com/pkg/errors"
 	"github.com/tidwall/gjson"
+	"log/slog"
 )
 
 // About 获取插件版本号
@@ -42,7 +43,7 @@ func (b *Bot) MessageFromId(messageId, target int64) (any, error) {
 	data := result.Get("data")
 	if data.Type != gjson.JSON {
 		e := fmt.Sprint("invalid json message: ", result)
-		log.Errorln(e)
+		slog.Error(e)
 		return nil, errors.New(e)
 	}
 	messageType := data.Get("type").String()
@@ -52,7 +53,7 @@ func (b *Bot) MessageFromId(messageId, target int64) (any, error) {
 		}
 	}
 	e := fmt.Sprint("decode message failed:", data.Raw)
-	log.Errorln(e)
+	slog.Error(e)
 	return nil, errors.New(e)
 }
 
@@ -132,7 +133,7 @@ func (b *Bot) RoamingMessages(timeStart, timeEnd, qq int64) ([]any, error) {
 	for _, data := range dataArray {
 		if data.Type != gjson.JSON {
 			e := fmt.Sprint("invalid json message: ", result)
-			log.Errorln(e)
+			slog.Error(e)
 			return nil, errors.New(e)
 		}
 		messageType := data.Get("type").String()
@@ -143,7 +144,7 @@ func (b *Bot) RoamingMessages(timeStart, timeEnd, qq int64) ([]any, error) {
 			}
 		}
 		e := fmt.Sprint("decode message failed:", data.Raw)
-		log.Errorln(e)
+		slog.Error(e)
 		return nil, errors.New(e)
 	}
 	return retArray, nil
@@ -236,7 +237,7 @@ func (b *Bot) GetGroupConfig(group int64) (*GroupConfig, error) {
 	groupConfig := &GroupConfig{}
 	if err = json.Unmarshal([]byte(result.Raw), groupConfig); err != nil {
 		e := fmt.Sprint("unmarshal json failed: ", err)
-		log.Errorln(e)
+		slog.Error(e)
 		return nil, err
 	}
 	return groupConfig, nil
@@ -263,7 +264,7 @@ func (b *Bot) GetMemberInfo(group, qq int64) (*Member, error) {
 	member := &Member{}
 	if err = json.Unmarshal([]byte(result.Raw), member); err != nil {
 		e := fmt.Sprint("unmarshal json failed: ", err)
-		log.Errorln(e)
+		slog.Error(e)
 		return nil, err
 	}
 	return member, nil

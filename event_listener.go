@@ -3,6 +3,7 @@ package miraihttp
 import (
 	"encoding/json"
 	"github.com/tidwall/gjson"
+	"log/slog"
 )
 
 func init() {
@@ -39,7 +40,7 @@ func init() {
 func parseEvent[T any](data gjson.Result) any {
 	var m T
 	if err := json.Unmarshal([]byte(data.Raw), &m); err != nil {
-		log.Errorln("json unmarshal failed: ", err)
+		slog.Error("json unmarshal failed", "buf", data.Raw, "error", err)
 		return nil
 	}
 	return &m
