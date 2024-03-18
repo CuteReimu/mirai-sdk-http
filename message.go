@@ -10,8 +10,8 @@ type SingleMessage interface {
 	FillMessageType()
 }
 
-// MessageChain 构建 MessageChain ，自动填上每个元素的Type字段
-func MessageChain(messages ...SingleMessage) []SingleMessage {
+// buildMessageChain 自动填上每个元素的Type字段
+func buildMessageChain(messages []SingleMessage) []SingleMessage {
 	for _, m := range messages {
 		m.FillMessageType()
 	}

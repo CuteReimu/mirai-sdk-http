@@ -45,7 +45,7 @@ go get -u github.com/CuteReimu/mirai-sdk-http
 
 ## 注意事项
 
-所有`ListenXXXXXX`函数之间都不支持并发，你可以在启动机器人的情况下调用这些函数，但是不要同时在多个协程调用这些函数。~~（不过在一般情况下确实不会有这种奇怪的需求）~~
+所有`ListenXXXXXX`函数之间都不支持并发，你可以在启动机器人的情况下调用这些函数，但是不要同时在多个协程调用这些函数，否则会出现`panic("don't call listen concurrently")`。~~（不过在一般情况下确实不会有这种奇怪的需求）~~
 
 ## 进度
 

@@ -2,13 +2,14 @@ package miraihttp
 
 import (
 	"encoding/json"
+	"errors"
 	"fmt"
 	"github.com/CuteReimu/goutil"
 	"github.com/gorilla/websocket"
-	"github.com/pkg/errors"
 	"github.com/tidwall/gjson"
 	"log/slog"
 	"runtime/debug"
+	"slices"
 	"strconv"
 	"sync"
 	"sync/atomic"
@@ -82,7 +83,7 @@ func Connect(host string, port int, channel WsChannel, verifyKey string, qq int6
 				continue
 			}
 			messageType := data.Get("type").String()
-			if f, ok := b.handler.Load(messageType); ok {
+			if h, ok := b.handler.Load(messageType); ok {
 				if p := decoder[messageType]; p == nil {
 					log.Error("cannot find message decoder: " + messageType)
 				} else if m := p(data); m != nil {
@@ -92,11 +93,7 @@ func Connect(host string, port int, channel WsChannel, verifyKey string, qq int6
 								log.Error("panic recovered", "error", r, "stack", string(debug.Stack()))
 							}
 						}()
-						for _, handler := range f.([]listenHandler) {
-							if !handler(m) {
-								break
-							}
-						}
+						h.(*handler).handle(m)
 					}
 					if b.eventChan == nil {
 						go fun()
@@ -108,6 +105,28 @@ func Connect(host string, port int, channel WsChannel, verifyKey string, qq int6
 		}
 	}()
 	return b, nil
+}
+
+type handler struct {
+	fs []listenHandler
+}
+
+func (h *handler) Append(f listenHandler) *handler {
+	if h == nil {
+		return &handler{fs: []listenHandler{f}}
+	}
+	return &handler{fs: append(slices.Clip(h.fs), []listenHandler{f}...)}
+}
+
+func (h *handler) handle(m any) {
+	if h == nil {
+		return
+	}
+	for _, f := range h.fs {
+		if !f(m) {
+			break
+		}
+	}
 }
 
 type Bot struct {
@@ -142,7 +161,7 @@ func (b *Bot) request(command, subCommand string, m any) (gjson.Result, error) {
 		return gjson.Result{}, err
 	}
 	log.Debug("write: " + string(buf))
-	time.AfterFunc(5*time.Second, func() {
+	timeoutTimer := time.AfterFunc(5*time.Second, func() {
 		if ch, ok := b.syncIdMap.LoadAndDelete(syncId); ok {
 			close(ch.(chan gjson.Result))
 		}
@@ -152,6 +171,7 @@ func (b *Bot) request(command, subCommand string, m any) (gjson.Result, error) {
 		log.Error("request timeout")
 		return gjson.Result{}, errors.New("request timeout")
 	}
+	timeoutTimer.Stop()
 	code := result.Get("code").Int()
 	if code != 0 {
 		e := fmt.Sprint("Non-zero code: ", code, ", error message: ", result.Get("msg"))
@@ -173,12 +193,12 @@ var decoder = make(map[string]func(data gjson.Result) any)
 type listenHandler func(message any) bool
 
 func listen[M any](b *Bot, key string, l func(message M) bool) {
-	var fs []listenHandler
+	var fs *handler
 	if f, ok := b.handler.Load(key); ok {
-		fs = f.([]listenHandler)
+		fs = f.(*handler)
 	}
-	fs = append(fs, func(m any) bool {
-		return l(m.(M))
-	})
-	b.handler.Store(key, fs)
+	fs2 := fs.Append(func(m any) bool { return l(m.(M)) })
+	if !b.handler.CompareAndSwap(key, fs, fs2) {
+		panic("don't call listen concurrently")
+	}
 }

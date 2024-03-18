@@ -2,15 +2,15 @@ package miraihttp
 
 import (
 	"encoding/json"
+	"errors"
 	"fmt"
-	"github.com/pkg/errors"
 	"github.com/tidwall/gjson"
 	"log/slog"
 )
 
 // About 获取插件版本号
 func (b *Bot) About() (string, error) {
-	result, err := b.request("sendGroupMessage", "", nil)
+	result, err := b.request("about", "", nil)
 	if err != nil {
 		return "", err
 	}
@@ -63,7 +63,7 @@ func (b *Bot) SendFriendMessage(qq, quote int64, messageChain []SingleMessage) (
 		Target       int64           `json:"target"`
 		Quote        int64           `json:"quote,omitempty"`
 		MessageChain []SingleMessage `json:"messageChain"`
-	}{qq, quote, messageChain})
+	}{qq, quote, buildMessageChain(messageChain)})
 	if err != nil {
 		return 0, err
 	}
@@ -76,7 +76,7 @@ func (b *Bot) SendGroupMessage(group, quote int64, messageChain []SingleMessage)
 		Target       int64           `json:"target"`
 		Quote        int64           `json:"quote,omitempty"`
 		MessageChain []SingleMessage `json:"messageChain"`
-	}{group, quote, messageChain})
+	}{group, quote, buildMessageChain(messageChain)})
 	if err != nil {
 		return 0, err
 	}
@@ -90,7 +90,7 @@ func (b *Bot) SendTempMessage(qq, group, quote int64, messageChain []SingleMessa
 		Group        int64           `json:"group"`
 		Quote        int64           `json:"quote,omitempty"`
 		MessageChain []SingleMessage `json:"messageChain"`
-	}{qq, group, quote, messageChain})
+	}{qq, group, quote, buildMessageChain(messageChain)})
 	if err != nil {
 		return 0, err
 	}
