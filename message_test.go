@@ -7,9 +7,9 @@ import (
 )
 
 func TestMessage(t *testing.T) {
-	assert.Equal(t, buildMessageChain([]SingleMessage{&Plain{Text: "123"}}), []SingleMessage{&Plain{Type: "Plain", Text: "123"}})
-	assert.Equal(t, buildMessageChain([]SingleMessage{&Poke{Name: "SixSixSix"}}), []SingleMessage{&Poke{Type: "Poke", Name: "SixSixSix"}})
-	assert.Equal(t, buildMessageChain([]SingleMessage{&Image{ImageId: "1", Url: "url"}}), []SingleMessage{&Image{Type: "Image", ImageId: "1", Url: "url"}})
+	assert.Equal(t, []SingleMessage{&Plain{Type: "Plain", Text: "123"}}, buildMessageChain([]SingleMessage{&Plain{Text: "123"}}))
+	assert.Equal(t, []SingleMessage{&Poke{Type: "Poke", Name: "SixSixSix"}}, buildMessageChain([]SingleMessage{&Poke{Name: "SixSixSix"}}))
+	assert.Equal(t, []SingleMessage{&Image{Type: "Image", ImageId: "1", Url: "url"}}, buildMessageChain([]SingleMessage{&Image{ImageId: "1", Url: "url"}}))
 }
 
 func TestMessageChain(t *testing.T) {
