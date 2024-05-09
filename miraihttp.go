@@ -9,7 +9,6 @@ import (
 	"github.com/tidwall/gjson"
 	"log/slog"
 	"runtime/debug"
-	"slices"
 	"strconv"
 	"sync"
 	"sync/atomic"
@@ -44,7 +43,7 @@ func Connect(host string, port int, channel WsChannel, verifyKey string, qq int6
 		return nil, err
 	}
 	log.Info("Connected successfully")
-	b := &Bot{QQ: qq, c: c}
+	b := &Bot{QQ: qq, c: c, handler: make(map[string][]listenHandler)}
 	if !concurrentEvent {
 		b.eventChan = goutil.NewBlockingQueue[func()]()
 		go func() {
@@ -83,7 +82,9 @@ func Connect(host string, port int, channel WsChannel, verifyKey string, qq int6
 				continue
 			}
 			messageType := data.Get("type").String()
-			if h, ok := b.handler.Load(messageType); ok {
+			b.handlerLock.RLock()
+			if h, ok := b.handler[messageType]; ok {
+				b.handlerLock.RUnlock()
 				if p := decoder[messageType]; p == nil {
 					log.Error("cannot find message decoder: " + messageType)
 				} else if m := p(data); m != nil {
@@ -93,7 +94,11 @@ func Connect(host string, port int, channel WsChannel, verifyKey string, qq int6
 								log.Error("panic recovered", "error", r, "stack", string(debug.Stack()))
 							}
 						}()
-						h.(*handler).handle(m)
+						for _, f := range h {
+							if !f(m) {
+								break
+							}
+						}
 					}
 					if b.eventChan == nil {
 						go fun()
@@ -101,41 +106,22 @@ func Connect(host string, port int, channel WsChannel, verifyKey string, qq int6
 						b.eventChan.Put(fun)
 					}
 				}
+			} else {
+				b.handlerLock.RUnlock()
 			}
 		}
 	}()
 	return b, nil
 }
 
-type handler struct {
-	fs []listenHandler
-}
-
-func (h *handler) Append(f listenHandler) *handler {
-	if h == nil {
-		return &handler{fs: []listenHandler{f}}
-	}
-	return &handler{fs: append(slices.Clip(h.fs), []listenHandler{f}...)}
-}
-
-func (h *handler) handle(m any) {
-	if h == nil {
-		return
-	}
-	for _, f := range h.fs {
-		if !f(m) {
-			break
-		}
-	}
-}
-
 type Bot struct {
-	QQ        int64
-	c         *websocket.Conn
-	syncId    atomic.Int64
-	handler   sync.Map
-	syncIdMap sync.Map
-	eventChan *goutil.BlockingQueue[func()]
+	QQ          int64
+	c           *websocket.Conn
+	syncId      atomic.Int64
+	handlerLock sync.RWMutex
+	handler     map[string][]listenHandler
+	syncIdMap   sync.Map
+	eventChan   *goutil.BlockingQueue[func()]
 }
 
 // request 发送请求
@@ -193,12 +179,7 @@ var decoder = make(map[string]func(data gjson.Result) any)
 type listenHandler func(message any) bool
 
 func listen[M any](b *Bot, key string, l func(message M) bool) {
-	var fs *handler
-	if f, ok := b.handler.Load(key); ok {
-		fs = f.(*handler)
-	}
-	fs2 := fs.Append(func(m any) bool { return l(m.(M)) })
-	if !b.handler.CompareAndSwap(key, fs, fs2) {
-		panic("don't call listen concurrently")
-	}
+	b.handlerLock.Lock()
+	defer b.handlerLock.Unlock()
+	b.handler[key] = append(b.handler[key], func(m any) bool { return l(m.(M)) })
 }
