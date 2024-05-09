@@ -48,3 +48,21 @@ type Member struct {
 	MuteTimeRemaining  int64  `json:"muteTimeRemaining"`  // 剩余禁言时长
 	Group              Group  `json:"group"`              // 群信息
 }
+
+type Sex string
+
+const (
+	SexUnknown Sex = "UNKNOWN" // 未知
+	SexMale    Sex = "MALE"    // 男
+	SexFemale  Sex = "FEMALE"  // 女
+)
+
+// Profile 用户资料
+type Profile struct {
+	Nickname string `json:"nickname"` // 昵称
+	Email    string `json:"email"`    // 邮箱
+	Age      int    `json:"age"`      // 年龄
+	Level    int    `json:"level"`    // 等级
+	Sign     string `json:"sign"`     // 个性签名
+	Sex      Sex    `json:"sex"`      // 性别
+}

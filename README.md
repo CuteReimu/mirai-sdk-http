@@ -61,7 +61,7 @@ go get -u github.com/CuteReimu/mirai-sdk-http
 - 请求
   - [x] 获取插件信息
   - [x] 缓存操作
-  - [ ] 获取账号信息
+  - [x] 获取账号信息
   - [x] 消息发送与撤回
   - [ ] 文件操作
   - [ ] 多媒体内容上传
@@ -74,4 +74,3 @@ go get -u github.com/CuteReimu/mirai-sdk-http
   - [x] 连接与认证
   - [ ] 断线重连
   - [ ] MiraiCode解析
-

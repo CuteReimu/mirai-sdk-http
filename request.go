@@ -293,3 +293,135 @@ func (b *Bot) MemberAdmin(group, qq int64, assign bool) error {
 	}{group, qq, assign})
 	return err
 }
+
+// FriendList 获取好友列表
+func (b *Bot) FriendList() ([]*Friend, error) {
+	result, err := b.request("friendList", "", nil)
+	if err != nil {
+		return nil, err
+	}
+	var friends []*Friend
+	if err = json.Unmarshal([]byte(result.Raw), &friends); err != nil {
+		e := fmt.Sprint("unmarshal json failed: ", err)
+		slog.Error(e)
+		return nil, err
+	}
+	return friends, nil
+}
+
+// GroupList 获取群列表
+func (b *Bot) GroupList() ([]*Group, error) {
+	result, err := b.request("groupList", "", nil)
+	if err != nil {
+		return nil, err
+	}
+	var groups []*Group
+	if err = json.Unmarshal([]byte(result.Raw), &groups); err != nil {
+		e := fmt.Sprint("unmarshal json failed: ", err)
+		slog.Error(e)
+		return nil, err
+	}
+	return groups, nil
+}
+
+// MemberList 获取群成员列表
+func (b *Bot) MemberList(group int64) ([]*Member, error) {
+	result, err := b.request("memberList", "", &struct {
+		Target int64 `json:"target"`
+	}{group})
+	if err != nil {
+		return nil, err
+	}
+	var members []*Member
+	if err = json.Unmarshal([]byte(result.Raw), &members); err != nil {
+		e := fmt.Sprint("unmarshal json failed: ", err)
+		slog.Error(e)
+		return nil, err
+	}
+	return members, nil
+}
+
+// LatestMemberList 获取最新群成员列表，qqs为空表示获取所有
+func (b *Bot) LatestMemberList(group int64, qqs []int64) ([]*Member, error) {
+	result, err := b.request("latestMemberList", "", &struct {
+		Target    int64   `json:"target"`
+		MemberIds []int64 `json:"memberIds"`
+	}{group, qqs})
+	if err != nil {
+		return nil, err
+	}
+	var members []*Member
+	if err = json.Unmarshal([]byte(result.Raw), &members); err != nil {
+		e := fmt.Sprint("unmarshal json failed: ", err)
+		slog.Error(e)
+		return nil, err
+	}
+	return members, nil
+}
+
+// BotProfile 获取Bot资料
+func (b *Bot) BotProfile() (*Profile, error) {
+	result, err := b.request("botProfile", "", nil)
+	if err != nil {
+		return nil, err
+	}
+	profile := &Profile{}
+	if err = json.Unmarshal([]byte(result.Raw), profile); err != nil {
+		e := fmt.Sprint("unmarshal json failed: ", err)
+		slog.Error(e)
+		return nil, err
+	}
+	return profile, nil
+}
+
+// FriendProfile 获取好友资料
+func (b *Bot) FriendProfile(qq int64) (*Profile, error) {
+	result, err := b.request("friendProfile", "", &struct {
+		Target int64 `json:"target"`
+	}{qq})
+	if err != nil {
+		return nil, err
+	}
+	profile := &Profile{}
+	if err = json.Unmarshal([]byte(result.Raw), profile); err != nil {
+		e := fmt.Sprint("unmarshal json failed: ", err)
+		slog.Error(e)
+		return nil, err
+	}
+	return profile, nil
+}
+
+// MemberProfile 获取群成员资料
+func (b *Bot) MemberProfile(group, qq int64) (*Profile, error) {
+	result, err := b.request("memberProfile", "", &struct {
+		Target   int64 `json:"target"`
+		MemberId int64 `json:"memberId"`
+	}{group, qq})
+	if err != nil {
+		return nil, err
+	}
+	profile := &Profile{}
+	if err = json.Unmarshal([]byte(result.Raw), profile); err != nil {
+		e := fmt.Sprint("unmarshal json failed: ", err)
+		slog.Error(e)
+		return nil, err
+	}
+	return profile, nil
+}
+
+// UserProfile 获取QQ用户资料
+func (b *Bot) UserProfile(qq int64) (*Profile, error) {
+	result, err := b.request("userProfile", "", &struct {
+		Target int64 `json:"target"`
+	}{qq})
+	if err != nil {
+		return nil, err
+	}
+	profile := &Profile{}
+	if err = json.Unmarshal([]byte(result.Raw), profile); err != nil {
+		e := fmt.Sprint("unmarshal json failed: ", err)
+		slog.Error(e)
+		return nil, err
+	}
+	return profile, nil
+}
