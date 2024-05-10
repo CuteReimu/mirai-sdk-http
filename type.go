@@ -1,5 +1,7 @@
 package miraihttp
 
+import "fmt"
+
 type Perm string
 
 const (
@@ -30,11 +32,19 @@ type Friend struct {
 	Remark   string `json:"remark"`   // 备注
 }
 
+func (f *Friend) String() string {
+	return fmt.Sprintf("%s(%d)", f.Nickname, f.Id)
+}
+
 // Group 群
 type Group struct {
 	Id         int64  `json:"id"`         // 群号
 	Name       string `json:"name"`       // 群名称
 	Permission Perm   `json:"permission"` // Bot在群中的权限
+}
+
+func (g *Group) String() string {
+	return fmt.Sprintf("%s(%d)", g.Name, g.Id)
 }
 
 // Member 群成员
@@ -47,6 +57,10 @@ type Member struct {
 	LastSpeakTimestamp int64  `json:"lastSpeakTimestamp"` // 最近发言时间戳
 	MuteTimeRemaining  int64  `json:"muteTimeRemaining"`  // 剩余禁言时长
 	Group              Group  `json:"group"`              // 群信息
+}
+
+func (m *Member) String() string {
+	return fmt.Sprintf("%s(%d)", m.MemberName, m.Id)
 }
 
 type Sex string
