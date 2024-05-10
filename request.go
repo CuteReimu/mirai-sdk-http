@@ -58,11 +58,11 @@ func (b *Bot) MessageFromId(messageId, target int64) (any, error) {
 }
 
 // SendFriendMessage 发送好友消息，qq-目标好友的QQ号，quote-引用回复的消息，messageChain-发送的内容，返回消息id
-func (b *Bot) SendFriendMessage(qq, quote int64, messageChain []SingleMessage) (int64, error) {
+func (b *Bot) SendFriendMessage(qq, quote int64, messageChain MessageChain) (int64, error) {
 	result, err := b.request("sendFriendMessage", "", &struct {
-		Target       int64           `json:"target"`
-		Quote        int64           `json:"quote,omitempty"`
-		MessageChain []SingleMessage `json:"messageChain"`
+		Target       int64        `json:"target"`
+		Quote        int64        `json:"quote,omitempty"`
+		MessageChain MessageChain `json:"messageChain"`
 	}{qq, quote, buildMessageChain(messageChain)})
 	if err != nil {
 		return 0, err
@@ -71,11 +71,11 @@ func (b *Bot) SendFriendMessage(qq, quote int64, messageChain []SingleMessage) (
 }
 
 // SendGroupMessage 发送群消息，group-群号，quote-引用回复的消息，messageChain-发送的内容，返回消息id
-func (b *Bot) SendGroupMessage(group, quote int64, messageChain []SingleMessage) (int64, error) {
+func (b *Bot) SendGroupMessage(group, quote int64, messageChain MessageChain) (int64, error) {
 	result, err := b.request("sendGroupMessage", "", &struct {
-		Target       int64           `json:"target"`
-		Quote        int64           `json:"quote,omitempty"`
-		MessageChain []SingleMessage `json:"messageChain"`
+		Target       int64        `json:"target"`
+		Quote        int64        `json:"quote,omitempty"`
+		MessageChain MessageChain `json:"messageChain"`
 	}{group, quote, buildMessageChain(messageChain)})
 	if err != nil {
 		return 0, err
@@ -84,12 +84,12 @@ func (b *Bot) SendGroupMessage(group, quote int64, messageChain []SingleMessage)
 }
 
 // SendTempMessage 发送临时会话消息，qq-临时会话对象QQ号，group-临时会话群号，quote-引用回复的消息，messageChain-发送的内容，返回消息id
-func (b *Bot) SendTempMessage(qq, group, quote int64, messageChain []SingleMessage) (int64, error) {
+func (b *Bot) SendTempMessage(qq, group, quote int64, messageChain MessageChain) (int64, error) {
 	result, err := b.request("sendTempMessage", "", &struct {
-		QQ           int64           `json:"qq"`
-		Group        int64           `json:"group"`
-		Quote        int64           `json:"quote,omitempty"`
-		MessageChain []SingleMessage `json:"messageChain"`
+		QQ           int64        `json:"qq"`
+		Group        int64        `json:"group"`
+		Quote        int64        `json:"quote,omitempty"`
+		MessageChain MessageChain `json:"messageChain"`
 	}{qq, group, quote, buildMessageChain(messageChain)})
 	if err != nil {
 		return 0, err

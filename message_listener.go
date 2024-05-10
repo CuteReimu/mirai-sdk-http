@@ -21,7 +21,7 @@ func init() {
 // FriendMessage 好友消息
 type FriendMessage struct {
 	Sender       Friend
-	MessageChain []SingleMessage
+	MessageChain MessageChain
 }
 
 // ListenFriendMessage 监听好友消息
@@ -47,7 +47,7 @@ func parseFriendMessage(data gjson.Result) any {
 // GroupMessage 群消息
 type GroupMessage struct {
 	Sender       Member
-	MessageChain []SingleMessage
+	MessageChain MessageChain
 }
 
 // ListenGroupMessage 监听群消息
@@ -73,7 +73,7 @@ func parseGroupMessage(data gjson.Result) any {
 // TempMessage 群临时消息
 type TempMessage struct {
 	Sender       Member
-	MessageChain []SingleMessage
+	MessageChain MessageChain
 }
 
 // ListenTempMessage 监听群临时消息
@@ -99,7 +99,7 @@ func parseTempMessage(data gjson.Result) any {
 // StrangerMessage 陌生人消息
 type StrangerMessage struct {
 	Sender       Friend
-	MessageChain []SingleMessage
+	MessageChain MessageChain
 }
 
 // ListenStrangerMessage 监听陌生人消息
@@ -130,7 +130,7 @@ type OtherClient struct {
 // OtherClientMessage 其他客户端消息
 type OtherClientMessage struct {
 	Sender       OtherClient
-	MessageChain []SingleMessage
+	MessageChain MessageChain
 }
 
 // ListenOtherClientMessage 监听其他客户端消息
@@ -156,7 +156,7 @@ func parseOtherClientMessage(data gjson.Result) any {
 // FriendSyncMessage 同步好友消息
 type FriendSyncMessage struct {
 	Subject      Friend
-	MessageChain []SingleMessage
+	MessageChain MessageChain
 }
 
 // ListenFriendSyncMessage 监听同步好友消息
@@ -182,7 +182,7 @@ func parseFriendSyncMessage(data gjson.Result) any {
 // GroupSyncMessage 同步群消息
 type GroupSyncMessage struct {
 	Subject      Group
-	MessageChain []SingleMessage
+	MessageChain MessageChain
 }
 
 // ListenGroupSyncMessage 监听同步群消息
@@ -208,7 +208,7 @@ func parseGroupSyncMessage(data gjson.Result) any {
 // TempSyncMessage 同步群临时消息
 type TempSyncMessage struct {
 	Subject      Member
-	MessageChain []SingleMessage
+	MessageChain MessageChain
 }
 
 // ListenTempSyncMessage 监听同步群临时消息
@@ -234,7 +234,7 @@ func parseTempSyncMessage(data gjson.Result) any {
 // StrangerSyncMessage 同步好友消息
 type StrangerSyncMessage struct {
 	Subject      Friend
-	MessageChain []SingleMessage
+	MessageChain MessageChain
 }
 
 // ListenStrangerSyncMessage 监听同步好友消息

@@ -2,16 +2,31 @@ package miraihttp
 
 import (
 	"encoding/json"
+	"errors"
 	"github.com/tidwall/gjson"
 	"log/slog"
 )
+
+type MessageChain []SingleMessage
+
+func (c *MessageChain) UnmarshalJSON(data []byte) error {
+	if !gjson.ValidBytes(data) {
+		return errors.New("invalid json data")
+	}
+	result := gjson.ParseBytes(data)
+	if !result.IsArray() {
+		return errors.New("result is not array")
+	}
+	*c = parseMessageChain(result.Array())
+	return nil
+}
 
 type SingleMessage interface {
 	FillMessageType()
 }
 
 // buildMessageChain 自动填上每个元素的Type字段
-func buildMessageChain(messages []SingleMessage) []SingleMessage {
+func buildMessageChain(messages MessageChain) MessageChain {
 	for _, m := range messages {
 		m.FillMessageType()
 	}
@@ -285,11 +300,11 @@ var singleMessageBuilder = map[string]func() SingleMessage{
 	"MiraiCode":      func() SingleMessage { return &MiraiCode{} },
 }
 
-func parseMessageChain(results []gjson.Result) []SingleMessage {
+func parseMessageChain(results []gjson.Result) MessageChain {
 	if len(results) == 0 {
 		return nil
 	}
-	ret := make([]SingleMessage, 0, len(results))
+	ret := make(MessageChain, 0, len(results))
 	for i := range results {
 		if results[i].Type != gjson.JSON {
 			slog.Error("single message is not json: " + results[i].Type.String())
