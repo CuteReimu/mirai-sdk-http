@@ -3,8 +3,10 @@ package miraihttp
 import (
 	"encoding/json"
 	"errors"
+	"fmt"
 	"github.com/tidwall/gjson"
 	"log/slog"
+	"strconv"
 )
 
 type MessageChain []SingleMessage
@@ -44,6 +46,10 @@ func (m *Source) FillMessageType() {
 	m.Type = "Source"
 }
 
+func (m *Source) String() string {
+	return ""
+}
+
 // Quote 引用回复
 type Quote struct {
 	Type     string `json:"type"`
@@ -58,6 +64,10 @@ func (m *Quote) FillMessageType() {
 	m.Type = "Quote"
 }
 
+func (m *Quote) String() string {
+	return "[引用]"
+}
+
 // At @消息
 type At struct {
 	Type    string `json:"type"`
@@ -69,6 +79,10 @@ func (m *At) FillMessageType() {
 	m.Type = "At"
 }
 
+func (m *At) String() string {
+	return "@" + strconv.FormatInt(m.Target, 10)
+}
+
 // AtAll @全体消息
 type AtAll struct {
 	Type string `json:"type"`
@@ -76,6 +90,10 @@ type AtAll struct {
 
 func (m *AtAll) FillMessageType() {
 	m.Type = "AtAll"
+}
+
+func (m *AtAll) String() string {
+	return "@全体成员"
 }
 
 // Face QQ表情
@@ -89,6 +107,17 @@ func (m *Face) FillMessageType() {
 	m.Type = "Face"
 }
 
+func (m *Face) String() string {
+	switch {
+	case m.Name != "":
+		return "[" + m.Name + "]"
+	case m.FaceId != 0:
+		return fmt.Sprintf("[表情:%d]", m.FaceId)
+	default:
+		return "[表情]"
+	}
+}
+
 // Plain 文字消息
 type Plain struct {
 	Type string `json:"type"`
@@ -97,6 +126,10 @@ type Plain struct {
 
 func (m *Plain) FillMessageType() {
 	m.Type = "Plain"
+}
+
+func (m *Plain) String() string {
+	return m.Text
 }
 
 // Image 图片（参数优先级imageId > url > path > base64）
@@ -112,6 +145,10 @@ func (m *Image) FillMessageType() {
 	m.Type = "Image"
 }
 
+func (m *Image) String() string {
+	return "[图片]"
+}
+
 // FlashImage 闪照，参数同Image
 type FlashImage struct {
 	Type    string `json:"type"`
@@ -123,6 +160,10 @@ type FlashImage struct {
 
 func (m *FlashImage) FillMessageType() {
 	m.Type = "FlashImage"
+}
+
+func (m *FlashImage) String() string {
+	return "[闪照]"
 }
 
 // Voice 语音（参数优先级imageId > url > path > base64）
@@ -139,6 +180,10 @@ func (m *Voice) FillMessageType() {
 	m.Type = "Voice"
 }
 
+func (m *Voice) String() string {
+	return "[语音消息]"
+}
+
 type Xml struct {
 	Type string `json:"type"`
 	Xml  string `json:"xml"` // XML文本
@@ -146,6 +191,10 @@ type Xml struct {
 
 func (m *Xml) FillMessageType() {
 	m.Type = "Xml"
+}
+
+func (m *Xml) String() string {
+	return m.Xml
 }
 
 type Json struct {
@@ -157,6 +206,10 @@ func (m *Json) FillMessageType() {
 	m.Type = "Json"
 }
 
+func (m *Json) String() string {
+	return m.Json
+}
+
 type App struct {
 	Type    string `json:"type"`
 	Content string `json:"content"` // 内容
@@ -164,6 +217,10 @@ type App struct {
 
 func (m *App) FillMessageType() {
 	m.Type = "App"
+}
+
+func (m *App) String() string {
+	return m.Content
 }
 
 // PokeName 戳一戳的类型
@@ -188,6 +245,10 @@ func (m *Poke) FillMessageType() {
 	m.Type = "Poke"
 }
 
+func (m *Poke) String() string {
+	return "[戳一戳]"
+}
+
 // Dice 骰子
 type Dice struct {
 	Type  string `json:"type"`
@@ -196,6 +257,10 @@ type Dice struct {
 
 func (m *Dice) FillMessageType() {
 	m.Type = "Dice"
+}
+
+func (m *Dice) String() string {
+	return fmt.Sprintf("[骰子:%d]", m.Value)
 }
 
 // MarketFace 商城表情（目前商城表情仅支持接收和转发，不支持构造发送）
@@ -207,6 +272,17 @@ type MarketFace struct {
 
 func (m *MarketFace) FillMessageType() {
 	m.Type = "MarketFace"
+}
+
+func (m *MarketFace) String() string {
+	switch {
+	case m.Name != "":
+		return "[" + m.Name + "]"
+	case m.Id != 0:
+		return fmt.Sprintf("[商城表情:%d]", m.Id)
+	default:
+		return "[商城表情]"
+	}
 }
 
 // MusicShare 音乐分享
@@ -223,6 +299,10 @@ type MusicShare struct {
 
 func (m *MusicShare) FillMessageType() {
 	m.Type = "MusicShare"
+}
+
+func (m *MusicShare) String() string {
+	return "[分享]" + m.Title
 }
 
 type ForwardMessageNode struct {
@@ -257,6 +337,10 @@ func (m *ForwardMessage) FillMessageType() {
 	m.Type = "ForwardMessage"
 }
 
+func (m *ForwardMessage) String() string {
+	return "[转发消息]"
+}
+
 // File 文件
 type File struct {
 	Type string `json:"type"`
@@ -269,6 +353,10 @@ func (m *File) FillMessageType() {
 	m.Type = "File"
 }
 
+func (m *File) String() string {
+	return "[文件]" + m.Name
+}
+
 type MiraiCode struct {
 	Type string `json:"type"`
 	Code string `json:"code"`
@@ -276,6 +364,10 @@ type MiraiCode struct {
 
 func (m *MiraiCode) FillMessageType() {
 	m.Type = "MiraiCode"
+}
+
+func (m *MiraiCode) String() string {
+	return m.Code
 }
 
 var singleMessageBuilder = map[string]func() SingleMessage{

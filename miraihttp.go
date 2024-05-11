@@ -62,7 +62,6 @@ func Connect(host string, port int, channel WsChannel, verifyKey string, qq int6
 				log.Error("read error", "error", err)
 				return
 			}
-			log.Debug("recv: " + string(message))
 			if !gjson.ValidBytes(message) {
 				log.Error("invalid json message: " + string(message))
 				continue
@@ -74,6 +73,7 @@ func Connect(host string, port int, channel WsChannel, verifyKey string, qq int6
 				continue
 			}
 			if len(syncId) > 0 && syncId[0] != '-' {
+				log.Debug("recv", "data", data, "syncId", syncId)
 				if ch, ok := b.syncIdMap.LoadAndDelete(syncId); ok {
 					ch0 := ch.(chan gjson.Result)
 					ch0 <- data
@@ -88,6 +88,7 @@ func Connect(host string, port int, channel WsChannel, verifyKey string, qq int6
 				if p := decoder[messageType]; p == nil {
 					log.Error("cannot find message decoder: " + messageType)
 				} else if m := p(data); m != nil {
+					log.Debug("recv", "content", m)
 					fun := func() {
 						defer func() {
 							if r := recover(); r != nil {
@@ -143,10 +144,10 @@ func (b *Bot) request(command, subCommand string, m any) (gjson.Result, error) {
 	b.syncIdMap.Store(syncId, ch)
 	err = b.c.WriteMessage(websocket.TextMessage, buf)
 	if err != nil {
-		log.Error("write error", "error", err)
+		log.Error("send error", "error", err)
 		return gjson.Result{}, err
 	}
-	log.Debug("write: " + string(buf))
+	log.Debug("send", "content", m, "syncId", syncId, "cmd", command, "subCmd", subCommand)
 	timeoutTimer := time.AfterFunc(5*time.Second, func() {
 		if ch, ok := b.syncIdMap.LoadAndDelete(syncId); ok {
 			close(ch.(chan gjson.Result))
