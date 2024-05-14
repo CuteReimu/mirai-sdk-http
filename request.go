@@ -425,3 +425,127 @@ func (b *Bot) UserProfile(qq int64) (*Profile, error) {
 	}
 	return profile, nil
 }
+
+type FileParam struct {
+	Id     string `json:"id"`               // 文件夹id, 空串为根目录
+	Path   string `json:"path,omitempty"`   // 文件夹路径, 文件夹允许重名, 不保证准确, 准确定位使用 id
+	Target int64  `json:"target,omitempty"` // 群号或好友QQ号
+	Group  int64  `json:"group,omitempty"`  // 群号
+	QQ     int64  `json:"qq,omitempty"`     // 好友QQ号
+
+	// 以下是查看文件列表 GetFileList 获取文件信息 GetFileInfo 时可选
+
+	WithDownloadInfo bool `json:"withDownloadInfo,omitempty"` // 是否携带下载信息。额外请求，无必要不要携带
+
+	// 以下是查看文件列表 GetFileList 时需要
+
+	Offset int `json:"offset,omitempty"` // 分页偏移
+	Size   int `json:"size,omitempty"`   // 分页大小
+
+	// 以下是创建文件夹 FileMkdir 时需要
+
+	DirectoryName string `json:"directoryName,omitempty"` // 新建文件夹名
+
+	// 以下是移动文件 FileMove 时需要
+
+	MoveTo     string `json:"moveTo,omitempty"`     // 移动目标文件夹id
+	MoveToPath string `json:"moveToPath,omitempty"` // 移动目标文件路径, 文件夹允许重名, 不保证准确, 准确定位使用 MoveTo
+
+	// 以下是重命名文件 FileRename 时需要
+
+	RenameTo string `json:"renameTo,omitempty"` // 新文件名
+}
+
+type FileDownloadInfo struct {
+	Sha1           string `json:"sha1"`
+	Md5            string `json:"md5"`
+	DownloadTimes  int    `json:"downloadTimes"`
+	UploaderId     int    `json:"uploaderId"`
+	UploadTime     int    `json:"uploadTime"`
+	LastModifyTime int    `json:"lastModifyTime"`
+	Url            string `json:"url"`
+}
+
+type FileInfo struct {
+	Name         string `json:"name"`
+	Id           string `json:"id"`
+	Path         string `json:"path"`
+	Parent       string `json:"parent"`
+	Contact      Group  `json:"contact"`
+	IsFile       bool   `json:"isFile"`
+	IsDictionary bool   `json:"isDictionary"`
+	IsDirectory  bool   `json:"isDirectory"`
+
+	// 以下字段只有查看文件列表 GetFileList 获取文件信息 GetFileInfo 时才会有
+
+	Sha1           string            `json:"sha1"`
+	Md5            string            `json:"md5"`
+	DownloadTimes  int               `json:"downloadTimes"`
+	UploaderId     int               `json:"uploaderId"`
+	UploadTime     int               `json:"uploadTime"`
+	LastModifyTime int               `json:"lastModifyTime"`
+	DownloadInfo   *FileDownloadInfo `json:"downloadInfo"` // 只有 WithDownloadInfo 为 true 时才会有
+}
+
+// GetFileList 查看文件列表
+func (b *Bot) GetFileList(param FileParam) ([]*FileInfo, error) {
+	result, err := b.request("file_list", "", param)
+	if err != nil {
+		return nil, err
+	}
+	var fileList []*FileInfo
+	if err = json.Unmarshal([]byte(result.Raw), &fileList); err != nil {
+		e := fmt.Sprint("unmarshal json failed: ", err)
+		slog.Error(e)
+		return nil, err
+	}
+	return fileList, nil
+}
+
+// GetFileInfo 获取文件信息
+func (b *Bot) GetFileInfo(param FileParam) (*FileInfo, error) {
+	result, err := b.request("file_info", "", param)
+	if err != nil {
+		return nil, err
+	}
+	fileList := &FileInfo{}
+	if err = json.Unmarshal([]byte(result.Raw), fileList); err != nil {
+		e := fmt.Sprint("unmarshal json failed: ", err)
+		slog.Error(e)
+		return nil, err
+	}
+	return fileList, nil
+}
+
+// FileMkdir 创建文件夹
+func (b *Bot) FileMkdir(param FileParam) (*FileInfo, error) {
+	result, err := b.request("file_mkdir", "", param)
+	if err != nil {
+		return nil, err
+	}
+	fileList := &FileInfo{}
+	if err = json.Unmarshal([]byte(result.Raw), fileList); err != nil {
+		e := fmt.Sprint("unmarshal json failed: ", err)
+		slog.Error(e)
+		return nil, err
+	}
+	return fileList, nil
+}
+
+// FileDelete 删除文件
+func (b *Bot) FileDelete(param FileParam) error {
+	_, err := b.request("file_mkdir", "", param)
+	return err
+}
+
+// FileMove 移动文件
+func (b *Bot) FileMove(param FileParam) error {
+	_, err := b.request("file_move", "", param)
+	return err
+}
+
+// fileRename 重命名文件
+func (b *Bot) fileRename(param FileParam) error {
+	_, err := b.request("file_rename", "", param)
+	return err
+}

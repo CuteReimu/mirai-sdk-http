@@ -63,7 +63,7 @@ go get -u github.com/CuteReimu/mirai-sdk-http
   - [x] 缓存操作
   - [x] 获取账号信息
   - [x] 消息发送与撤回
-  - [ ] 文件操作
+  - [x] 文件操作
   - [ ] 多媒体内容上传
   - [ ] 账号管理
   - [x] 群管理

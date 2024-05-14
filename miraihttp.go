@@ -68,17 +68,24 @@ func Connect(host string, port int, channel WsChannel, verifyKey string, qq int6
 			}
 			syncId := gjson.GetBytes(message, "syncId").String()
 			data := gjson.GetBytes(message, "data")
-			if data.Type != gjson.JSON {
-				log.Error("invalid json message: " + string(message))
-				continue
-			}
 			if len(syncId) > 0 && syncId[0] != '-' {
+				code := gjson.GetBytes(message, "code").Int()
+				if code != 0 {
+					e := fmt.Sprint("Non-zero code: ", code, ", error message: ", gjson.GetBytes(message, "msg").String())
+					log.Error(e)
+				}
 				log.Debug("recv", "data", data, "syncId", syncId)
 				if ch, ok := b.syncIdMap.LoadAndDelete(syncId); ok {
 					ch0 := ch.(chan gjson.Result)
-					ch0 <- data
+					if code == 0 {
+						ch0 <- data
+					}
 					close(ch0)
 				}
+				continue
+			}
+			if data.Type != gjson.JSON {
+				log.Error("invalid json message: " + string(message))
 				continue
 			}
 			messageType := data.Get("type").String()
@@ -155,16 +162,10 @@ func (b *Bot) request(command, subCommand string, m any) (gjson.Result, error) {
 	})
 	result, ok := <-ch
 	if !ok {
-		log.Error("request timeout")
-		return gjson.Result{}, errors.New("request timeout")
+		log.Error("request failed")
+		return gjson.Result{}, errors.New("request failed")
 	}
 	timeoutTimer.Stop()
-	code := result.Get("code").Int()
-	if code != 0 {
-		e := fmt.Sprint("Non-zero code: ", code, ", error message: ", result.Get("msg"))
-		log.Error(e)
-		return gjson.Result{}, errors.New(e)
-	}
 	return result, nil
 }
 
