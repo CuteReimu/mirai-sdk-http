@@ -470,7 +470,7 @@ type FileInfo struct {
 	Name         string `json:"name"`
 	Id           string `json:"id"`
 	Path         string `json:"path"`
-	Parent       string `json:"parent"`
+	Parent       any    `json:"parent"`
 	Contact      Group  `json:"contact"`
 	IsFile       bool   `json:"isFile"`
 	IsDictionary bool   `json:"isDictionary"`
@@ -521,7 +521,7 @@ func (b *Bot) GetFileInfo(param FileParam) (*FileInfo, error) {
 		return nil, errors.New(e)
 	}
 	fileList := &FileInfo{}
-	if err = json.Unmarshal([]byte(result.Raw), fileList); err != nil {
+	if err = json.Unmarshal([]byte(result.Get("data").Raw), fileList); err != nil {
 		e := fmt.Sprint("unmarshal json failed: ", err)
 		slog.Error(e)
 		return nil, err
@@ -542,7 +542,7 @@ func (b *Bot) FileMkdir(param FileParam) (*FileInfo, error) {
 		return nil, errors.New(e)
 	}
 	fileList := &FileInfo{}
-	if err = json.Unmarshal([]byte(result.Raw), fileList); err != nil {
+	if err = json.Unmarshal([]byte(result.Get("data").Raw), fileList); err != nil {
 		e := fmt.Sprint("unmarshal json failed: ", err)
 		slog.Error(e)
 		return nil, err
