@@ -594,3 +594,39 @@ func (b *Bot) FileRename(param FileParam) error {
 	}
 	return nil
 }
+
+// ResponseNewFriend 处理添加好友申请。operate：0-同意，1-拒绝，2-拒绝并拉黑
+func (b *Bot) ResponseNewFriend(request *NewFriendRequestEvent, operate int, message string) error {
+	_, err := b.request("resp_newFriendRequestEvent", "", &struct {
+		EventId int64  `json:"eventId"`
+		FromId  int64  `json:"fromId"`
+		GroupId int64  `json:"groupId"`
+		Operate int    `json:"operate"`
+		Message string `json:"message"`
+	}{request.EventId, request.QQ, request.Group, operate, message})
+	return err
+}
+
+// ResponseMemberJoin 处理用户入群申请，Bot需要有管理员权限。operate：0-同意，1-拒绝，2-忽略，3-拒绝并拉黑，4-忽略并拉黑
+func (b *Bot) ResponseMemberJoin(request *MemberJoinRequestEvent, operate int, message string) error {
+	_, err := b.request("resp_memberJoinRequestEvent", "", &struct {
+		EventId int64  `json:"eventId"`
+		FromId  int64  `json:"fromId"`
+		GroupId int64  `json:"groupId"`
+		Operate int    `json:"operate"`
+		Message string `json:"message"`
+	}{request.EventId, request.QQ, request.Group, operate, message})
+	return err
+}
+
+// ResponseBotInvitedJoinGroup 处理Bot被邀请入群申请，operate：0-同意，1-拒绝
+func (b *Bot) ResponseBotInvitedJoinGroup(request *BotInvitedJoinGroupRequestEvent, operate int, message string) error {
+	_, err := b.request("resp_newFriendRequestEvent", "", &struct {
+		EventId int64  `json:"eventId"`
+		FromId  int64  `json:"fromId"`
+		GroupId int64  `json:"groupId"`
+		Operate int    `json:"operate"`
+		Message string `json:"message"`
+	}{request.EventId, request.QQ, request.Group, operate, message})
+	return err
+}

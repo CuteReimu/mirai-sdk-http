@@ -68,7 +68,7 @@ go get -u github.com/CuteReimu/mirai-sdk-http
   - [ ] 账号管理
   - [x] 群管理
   - [ ] 群公告
-  - [ ] 事件处理
+  - [x] 事件处理
   - [ ] Console命令
 - 其它
   - [x] 连接与认证
