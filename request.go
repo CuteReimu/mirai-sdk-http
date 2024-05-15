@@ -493,8 +493,14 @@ func (b *Bot) GetFileList(param FileParam) ([]*FileInfo, error) {
 	if err != nil {
 		return nil, err
 	}
+	code := result.Get("code").Int()
+	if code != 0 {
+		e := fmt.Sprint("file_list failed: ", result.Get("msg").String(), ", code:", code)
+		slog.Error(e)
+		return nil, errors.New(e)
+	}
 	var fileList []*FileInfo
-	if err = json.Unmarshal([]byte(result.Raw), &fileList); err != nil {
+	if err = json.Unmarshal([]byte(result.Get("data").Raw), &fileList); err != nil {
 		e := fmt.Sprint("unmarshal json failed: ", err)
 		slog.Error(e)
 		return nil, err
@@ -507,6 +513,12 @@ func (b *Bot) GetFileInfo(param FileParam) (*FileInfo, error) {
 	result, err := b.request("file_info", "", param)
 	if err != nil {
 		return nil, err
+	}
+	code := result.Get("code").Int()
+	if code != 0 {
+		e := fmt.Sprint("file_info failed: ", result.Get("msg").String(), ", code:", code)
+		slog.Error(e)
+		return nil, errors.New(e)
 	}
 	fileList := &FileInfo{}
 	if err = json.Unmarshal([]byte(result.Raw), fileList); err != nil {
@@ -523,6 +535,12 @@ func (b *Bot) FileMkdir(param FileParam) (*FileInfo, error) {
 	if err != nil {
 		return nil, err
 	}
+	code := result.Get("code").Int()
+	if code != 0 {
+		e := fmt.Sprint("file_mkdir failed: ", result.Get("msg").String(), ", code:", code)
+		slog.Error(e)
+		return nil, errors.New(e)
+	}
 	fileList := &FileInfo{}
 	if err = json.Unmarshal([]byte(result.Raw), fileList); err != nil {
 		e := fmt.Sprint("unmarshal json failed: ", err)
@@ -534,18 +552,45 @@ func (b *Bot) FileMkdir(param FileParam) (*FileInfo, error) {
 
 // FileDelete 删除文件
 func (b *Bot) FileDelete(param FileParam) error {
-	_, err := b.request("file_mkdir", "", param)
-	return err
+	result, err := b.request("file_mkdir", "", param)
+	if err != nil {
+		return err
+	}
+	code := result.Get("code").Int()
+	if code != 0 {
+		e := fmt.Sprint("file_mkdir failed: ", result.Get("msg").String(), ", code:", code)
+		slog.Error(e)
+		return errors.New(e)
+	}
+	return nil
 }
 
 // FileMove 移动文件
 func (b *Bot) FileMove(param FileParam) error {
-	_, err := b.request("file_move", "", param)
-	return err
+	result, err := b.request("file_move", "", param)
+	if err != nil {
+		return err
+	}
+	code := result.Get("code").Int()
+	if code != 0 {
+		e := fmt.Sprint("file_move failed: ", result.Get("msg").String(), ", code:", code)
+		slog.Error(e)
+		return errors.New(e)
+	}
+	return nil
 }
 
-// fileRename 重命名文件
-func (b *Bot) fileRename(param FileParam) error {
-	_, err := b.request("file_rename", "", param)
-	return err
+// FileRename 重命名文件
+func (b *Bot) FileRename(param FileParam) error {
+	result, err := b.request("file_rename", "", param)
+	if err != nil {
+		return err
+	}
+	code := result.Get("code").Int()
+	if code != 0 {
+		e := fmt.Sprint("file_rename failed: ", result.Get("msg").String(), ", code:", code)
+		slog.Error(e)
+		return errors.New(e)
+	}
+	return nil
 }
