@@ -10,7 +10,7 @@ import (
 
 // About 获取插件版本号
 func (b *Bot) About() (string, error) {
-	result, err := b.request("about", "", nil)
+	result, err := b.request2("about", "", nil)
 	if err != nil {
 		return "", err
 	}
@@ -19,7 +19,7 @@ func (b *Bot) About() (string, error) {
 
 // BotList 获取登录账号
 func (b *Bot) BotList() ([]int64, error) {
-	result, err := b.request("botList", "", nil)
+	result, err := b.request2("botList", "", nil)
 	if err != nil {
 		return nil, err
 	}
@@ -33,7 +33,7 @@ func (b *Bot) BotList() ([]int64, error) {
 
 // MessageFromId 通过messageId获取消息，target-好友或QQ群，视情况返回 FriendMessage, GroupMessage, TempMessage, StrangerMessage
 func (b *Bot) MessageFromId(messageId, target int64) (any, error) {
-	result, err := b.request("messageFromId", "", &struct {
+	result, err := b.request2("messageFromId", "", &struct {
 		MessageId int64 `json:"messageId"`
 		Target    int64 `json:"target"`
 	}{messageId, target})
@@ -59,47 +59,47 @@ func (b *Bot) MessageFromId(messageId, target int64) (any, error) {
 
 // SendFriendMessage 发送好友消息，qq-目标好友的QQ号，quote-引用回复的消息，messageChain-发送的内容，返回消息id
 func (b *Bot) SendFriendMessage(qq, quote int64, messageChain MessageChain) (int64, error) {
-	result, err := b.request("sendFriendMessage", "", &struct {
+	result, err := b.request2("sendFriendMessage", "", &struct {
 		Target       int64        `json:"target"`
 		Quote        int64        `json:"quote,omitempty"`
 		MessageChain MessageChain `json:"messageChain"`
-	}{qq, quote, buildMessageChain(messageChain)})
+	}{qq, quote, buildMessageChain(messageChain)}, "messageId")
 	if err != nil {
 		return 0, err
 	}
-	return result.Get("messageId").Int(), nil
+	return result.Int(), nil
 }
 
 // SendGroupMessage 发送群消息，group-群号，quote-引用回复的消息，messageChain-发送的内容，返回消息id
 func (b *Bot) SendGroupMessage(group, quote int64, messageChain MessageChain) (int64, error) {
-	result, err := b.request("sendGroupMessage", "", &struct {
+	result, err := b.request2("sendGroupMessage", "", &struct {
 		Target       int64        `json:"target"`
 		Quote        int64        `json:"quote,omitempty"`
 		MessageChain MessageChain `json:"messageChain"`
-	}{group, quote, buildMessageChain(messageChain)})
+	}{group, quote, buildMessageChain(messageChain)}, "messageId")
 	if err != nil {
 		return 0, err
 	}
-	return result.Get("messageId").Int(), nil
+	return result.Int(), nil
 }
 
 // SendTempMessage 发送临时会话消息，qq-临时会话对象QQ号，group-临时会话群号，quote-引用回复的消息，messageChain-发送的内容，返回消息id
 func (b *Bot) SendTempMessage(qq, group, quote int64, messageChain MessageChain) (int64, error) {
-	result, err := b.request("sendTempMessage", "", &struct {
+	result, err := b.request2("sendTempMessage", "", &struct {
 		QQ           int64        `json:"qq"`
 		Group        int64        `json:"group"`
 		Quote        int64        `json:"quote,omitempty"`
 		MessageChain MessageChain `json:"messageChain"`
-	}{qq, group, quote, buildMessageChain(messageChain)})
+	}{qq, group, quote, buildMessageChain(messageChain)}, "messageId")
 	if err != nil {
 		return 0, err
 	}
-	return result.Get("messageId").Int(), nil
+	return result.Int(), nil
 }
 
 // SendNudge 发送头像戳一戳消息，qq-戳谁，subject-这条消息发到哪（好友/群），kind-上下文类型
 func (b *Bot) SendNudge(qq, subject int64, kind Kind) error {
-	_, err := b.request("sendNudge", "", &struct {
+	_, err := b.request2("sendNudge", "", &struct {
 		Target  int64 `json:"target"`
 		Subject int64 `json:"subject"`
 		Kind    Kind  `json:"kind"`
@@ -109,7 +109,7 @@ func (b *Bot) SendNudge(qq, subject int64, kind Kind) error {
 
 // Recall 撤回消息，target-撤回哪的消息（好友/群），messageId-需要撤回的消息的messageId
 func (b *Bot) Recall(target, messageId int64) error {
-	_, err := b.request("recall", "", &struct {
+	_, err := b.request2("recall", "", &struct {
 		Target    int64 `json:"target"`
 		MessageId int64 `json:"messageId"`
 	}{target, messageId})
@@ -120,7 +120,7 @@ func (b *Bot) Recall(target, messageId int64) error {
 //
 // 返回数组的元素为 FriendMessage, GroupMessage, TempMessage, StrangerMessage
 func (b *Bot) RoamingMessages(timeStart, timeEnd, qq int64) ([]any, error) {
-	result, err := b.request("roamingMessages", "", &struct {
+	result, err := b.request2("roamingMessages", "", &struct {
 		TimeStart int64 `json:"timeStart"`
 		TimeEnd   int64 `json:"timeEnd"`
 		Target    int64 `json:"target"`
@@ -152,7 +152,7 @@ func (b *Bot) RoamingMessages(timeStart, timeEnd, qq int64) ([]any, error) {
 
 // Mute 禁言群成员（需要有相关限权），group-群，qq-被禁言的人，time-时间，单位秒，最多30天
 func (b *Bot) Mute(group, qq, time int64) error {
-	_, err := b.request("mute", "", &struct {
+	_, err := b.request2("mute", "", &struct {
 		Target   int64 `json:"target"`
 		MemberId int64 `json:"memberId"`
 		Time     int64 `json:"time"`
@@ -162,7 +162,7 @@ func (b *Bot) Mute(group, qq, time int64) error {
 
 // Unmute 解除禁言群成员（需要有相关限权），group-群，qq-解除禁言的人
 func (b *Bot) Unmute(group, qq int64) error {
-	_, err := b.request("unmute", "", &struct {
+	_, err := b.request2("unmute", "", &struct {
 		Target   int64 `json:"target"`
 		MemberId int64 `json:"memberId"`
 	}{group, qq})
@@ -171,7 +171,7 @@ func (b *Bot) Unmute(group, qq int64) error {
 
 // Kick 移除群成员（需要有相关限权），group-群，qq-移除的人，block-移除后是否拉黑，msg-信息
 func (b *Bot) Kick(group, qq int64, block bool, msg string) error {
-	_, err := b.request("kick", "", &struct {
+	_, err := b.request2("kick", "", &struct {
 		Target   int64  `json:"target"`
 		MemberId int64  `json:"memberId"`
 		Block    bool   `json:"block"`
@@ -182,7 +182,7 @@ func (b *Bot) Kick(group, qq int64, block bool, msg string) error {
 
 // Quit 退出群聊（自己不能是群主）
 func (b *Bot) Quit(group int64) error {
-	_, err := b.request("quit", "", &struct {
+	_, err := b.request2("quit", "", &struct {
 		Target int64 `json:"target"`
 	}{group})
 	return err
@@ -190,7 +190,7 @@ func (b *Bot) Quit(group int64) error {
 
 // MuteAll 全体禁言（需要有相关限权）
 func (b *Bot) MuteAll(group int64) error {
-	_, err := b.request("muteAll", "", &struct {
+	_, err := b.request2("muteAll", "", &struct {
 		Target int64 `json:"target"`
 	}{group})
 	return err
@@ -198,7 +198,7 @@ func (b *Bot) MuteAll(group int64) error {
 
 // UnmuteAll 解除全体禁言（需要有相关限权）
 func (b *Bot) UnmuteAll(group int64) error {
-	_, err := b.request("unmuteAll", "", &struct {
+	_, err := b.request2("unmuteAll", "", &struct {
 		Target int64 `json:"target"`
 	}{group})
 	return err
@@ -206,7 +206,7 @@ func (b *Bot) UnmuteAll(group int64) error {
 
 // SetEssence 设置群精华消息（需要有相关限权）
 func (b *Bot) SetEssence(group, messageId int64) error {
-	_, err := b.request("setEssence", "", &struct {
+	_, err := b.request2("setEssence", "", &struct {
 		Target    int64 `json:"target"`
 		MessageId int64 `json:"messageId"`
 	}{group, messageId})
@@ -245,7 +245,7 @@ func (b *Bot) GetGroupConfig(group int64) (*GroupConfig, error) {
 
 // UpdateGroupConfig 修改群设置（需要有相关限权）
 func (b *Bot) UpdateGroupConfig(group int64, groupConfig *GroupConfig) error {
-	_, err := b.request("groupConfig", "update", &struct {
+	_, err := b.request2("groupConfig", "update", &struct {
 		Target int64        `json:"target"`
 		Config *GroupConfig `json:"config"`
 	}{group, groupConfig})
@@ -276,7 +276,7 @@ func (b *Bot) UpdateMemberInfo(group, qq int64, name, specialTitle string) error
 		Name         string `json:"name,omitempty"`
 		SpecialTitle string `json:"specialTitle,omitempty"`
 	}
-	_, err := b.request("memberInfo", "update", &struct {
+	_, err := b.request2("memberInfo", "update", &struct {
 		Target   int64 `json:"target"`
 		MemberId int64 `json:"memberId"`
 		Info     Info  `json:"info"`
@@ -286,7 +286,7 @@ func (b *Bot) UpdateMemberInfo(group, qq int64, name, specialTitle string) error
 
 // MemberAdmin 修改群员管理员（需要有群主限权），assign-是否设置为管理员
 func (b *Bot) MemberAdmin(group, qq int64, assign bool) error {
-	_, err := b.request("memberAdmin", "", &struct {
+	_, err := b.request2("memberAdmin", "", &struct {
 		Target   int64 `json:"target"`
 		MemberId int64 `json:"memberId"`
 		Assign   bool  `json:"assign"`
@@ -296,7 +296,7 @@ func (b *Bot) MemberAdmin(group, qq int64, assign bool) error {
 
 // FriendList 获取好友列表
 func (b *Bot) FriendList() ([]*Friend, error) {
-	result, err := b.request("friendList", "", nil)
+	result, err := b.request2("friendList", "", nil)
 	if err != nil {
 		return nil, err
 	}
@@ -311,7 +311,7 @@ func (b *Bot) FriendList() ([]*Friend, error) {
 
 // GroupList 获取群列表
 func (b *Bot) GroupList() ([]*Group, error) {
-	result, err := b.request("groupList", "", nil)
+	result, err := b.request2("groupList", "", nil)
 	if err != nil {
 		return nil, err
 	}
@@ -326,7 +326,7 @@ func (b *Bot) GroupList() ([]*Group, error) {
 
 // MemberList 获取群成员列表
 func (b *Bot) MemberList(group int64) ([]*Member, error) {
-	result, err := b.request("memberList", "", &struct {
+	result, err := b.request2("memberList", "", &struct {
 		Target int64 `json:"target"`
 	}{group})
 	if err != nil {
@@ -343,7 +343,7 @@ func (b *Bot) MemberList(group int64) ([]*Member, error) {
 
 // LatestMemberList 获取最新群成员列表，qqs为空表示获取所有
 func (b *Bot) LatestMemberList(group int64, qqs []int64) ([]*Member, error) {
-	result, err := b.request("latestMemberList", "", &struct {
+	result, err := b.request2("latestMemberList", "", &struct {
 		Target    int64   `json:"target"`
 		MemberIds []int64 `json:"memberIds"`
 	}{group, qqs})
@@ -489,18 +489,12 @@ type FileInfo struct {
 
 // GetFileList 查看文件列表
 func (b *Bot) GetFileList(param FileParam) ([]*FileInfo, error) {
-	result, err := b.request("file_list", "", param)
+	result, err := b.request2("file_list", "", param)
 	if err != nil {
 		return nil, err
 	}
-	code := result.Get("code").Int()
-	if code != 0 {
-		e := fmt.Sprint("file_list failed: ", result.Get("msg").String(), ", code:", code)
-		slog.Error(e)
-		return nil, errors.New(e)
-	}
 	var fileList []*FileInfo
-	if err = json.Unmarshal([]byte(result.Get("data").Raw), &fileList); err != nil {
+	if err = json.Unmarshal([]byte(result.Raw), &fileList); err != nil {
 		e := fmt.Sprint("unmarshal json failed: ", err)
 		slog.Error(e)
 		return nil, err
@@ -510,18 +504,12 @@ func (b *Bot) GetFileList(param FileParam) ([]*FileInfo, error) {
 
 // GetFileInfo 获取文件信息
 func (b *Bot) GetFileInfo(param FileParam) (*FileInfo, error) {
-	result, err := b.request("file_info", "", param)
+	result, err := b.request2("file_info", "", param)
 	if err != nil {
 		return nil, err
 	}
-	code := result.Get("code").Int()
-	if code != 0 {
-		e := fmt.Sprint("file_info failed: ", result.Get("msg").String(), ", code:", code)
-		slog.Error(e)
-		return nil, errors.New(e)
-	}
 	fileList := &FileInfo{}
-	if err = json.Unmarshal([]byte(result.Get("data").Raw), fileList); err != nil {
+	if err = json.Unmarshal([]byte(result.Raw), fileList); err != nil {
 		e := fmt.Sprint("unmarshal json failed: ", err)
 		slog.Error(e)
 		return nil, err
@@ -531,18 +519,12 @@ func (b *Bot) GetFileInfo(param FileParam) (*FileInfo, error) {
 
 // FileMkdir 创建文件夹
 func (b *Bot) FileMkdir(param FileParam) (*FileInfo, error) {
-	result, err := b.request("file_mkdir", "", param)
+	result, err := b.request2("file_mkdir", "", param)
 	if err != nil {
 		return nil, err
 	}
-	code := result.Get("code").Int()
-	if code != 0 {
-		e := fmt.Sprint("file_mkdir failed: ", result.Get("msg").String(), ", code:", code)
-		slog.Error(e)
-		return nil, errors.New(e)
-	}
 	fileList := &FileInfo{}
-	if err = json.Unmarshal([]byte(result.Get("data").Raw), fileList); err != nil {
+	if err = json.Unmarshal([]byte(result.Raw), fileList); err != nil {
 		e := fmt.Sprint("unmarshal json failed: ", err)
 		slog.Error(e)
 		return nil, err
@@ -552,7 +534,7 @@ func (b *Bot) FileMkdir(param FileParam) (*FileInfo, error) {
 
 // FileDelete 删除文件
 func (b *Bot) FileDelete(param FileParam) error {
-	result, err := b.request("file_mkdir", "", param)
+	result, err := b.request2("file_mkdir", "", param)
 	if err != nil {
 		return err
 	}
@@ -567,32 +549,14 @@ func (b *Bot) FileDelete(param FileParam) error {
 
 // FileMove 移动文件
 func (b *Bot) FileMove(param FileParam) error {
-	result, err := b.request("file_move", "", param)
-	if err != nil {
-		return err
-	}
-	code := result.Get("code").Int()
-	if code != 0 {
-		e := fmt.Sprint("file_move failed: ", result.Get("msg").String(), ", code:", code)
-		slog.Error(e)
-		return errors.New(e)
-	}
-	return nil
+	_, err := b.request2("file_move", "", param)
+	return err
 }
 
 // FileRename 重命名文件
 func (b *Bot) FileRename(param FileParam) error {
-	result, err := b.request("file_rename", "", param)
-	if err != nil {
-		return err
-	}
-	code := result.Get("code").Int()
-	if code != 0 {
-		e := fmt.Sprint("file_rename failed: ", result.Get("msg").String(), ", code:", code)
-		slog.Error(e)
-		return errors.New(e)
-	}
-	return nil
+	_, err := b.request2("file_rename", "", param)
+	return err
 }
 
 // ResponseNewFriend 处理添加好友申请。operate：0-同意，1-拒绝，2-拒绝并拉黑

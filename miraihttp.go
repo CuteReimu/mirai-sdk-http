@@ -168,6 +168,18 @@ func (b *Bot) request(command, subCommand string, m any) (gjson.Result, error) {
 	return result, nil
 }
 
+// request2 发送请求，针对请求里面套一层{ "code":0, "msg":"", "data": xxx } 的情况
+func (b *Bot) request2(command, subCommand string, m any, specificField ...string) (gjson.Result, error) {
+	result, err := b.request(command, subCommand, m)
+	if err != nil {
+		return gjson.Result{}, err
+	}
+	if len(specificField) > 0 {
+		return result.Get(specificField[0]), nil
+	}
+	return result.Get("data"), nil
+}
+
 type requestMessage struct {
 	SyncId     int64  `json:"syncId"`
 	Command    string `json:"command"`
