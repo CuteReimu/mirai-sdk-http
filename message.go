@@ -334,7 +334,7 @@ type ForwardMessage struct {
 }
 
 func (m *ForwardMessage) FillMessageType() {
-	m.Type = "ForwardMessage"
+	m.Type = "Forward"
 }
 
 func (m *ForwardMessage) String() string {
@@ -371,25 +371,25 @@ func (m *MiraiCode) String() string {
 }
 
 var singleMessageBuilder = map[string]func() SingleMessage{
-	"Source":         func() SingleMessage { return &Source{} },
-	"Quote":          func() SingleMessage { return &Quote{} },
-	"At":             func() SingleMessage { return &At{} },
-	"AtAll":          func() SingleMessage { return &AtAll{} },
-	"Face":           func() SingleMessage { return &Face{} },
-	"Plain":          func() SingleMessage { return &Plain{} },
-	"Image":          func() SingleMessage { return &Image{} },
-	"FlashImage":     func() SingleMessage { return &FlashImage{} },
-	"Voice":          func() SingleMessage { return &Voice{} },
-	"Xml":            func() SingleMessage { return &Xml{} },
-	"Json":           func() SingleMessage { return &Json{} },
-	"App":            func() SingleMessage { return &App{} },
-	"Poke":           func() SingleMessage { return &Poke{} },
-	"Dice":           func() SingleMessage { return &Dice{} },
-	"MarketFace":     func() SingleMessage { return &MarketFace{} },
-	"MusicShare":     func() SingleMessage { return &MusicShare{} },
-	"ForwardMessage": func() SingleMessage { return &ForwardMessage{} },
-	"File":           func() SingleMessage { return &File{} },
-	"MiraiCode":      func() SingleMessage { return &MiraiCode{} },
+	"Source":     func() SingleMessage { return &Source{} },
+	"Quote":      func() SingleMessage { return &Quote{} },
+	"At":         func() SingleMessage { return &At{} },
+	"AtAll":      func() SingleMessage { return &AtAll{} },
+	"Face":       func() SingleMessage { return &Face{} },
+	"Plain":      func() SingleMessage { return &Plain{} },
+	"Image":      func() SingleMessage { return &Image{} },
+	"FlashImage": func() SingleMessage { return &FlashImage{} },
+	"Voice":      func() SingleMessage { return &Voice{} },
+	"Xml":        func() SingleMessage { return &Xml{} },
+	"Json":       func() SingleMessage { return &Json{} },
+	"App":        func() SingleMessage { return &App{} },
+	"Poke":       func() SingleMessage { return &Poke{} },
+	"Dice":       func() SingleMessage { return &Dice{} },
+	"MarketFace": func() SingleMessage { return &MarketFace{} },
+	"MusicShare": func() SingleMessage { return &MusicShare{} },
+	"Forward":    func() SingleMessage { return &ForwardMessage{} },
+	"File":       func() SingleMessage { return &File{} },
+	"MiraiCode":  func() SingleMessage { return &MiraiCode{} },
 }
 
 func parseMessageChain(results []gjson.Result) MessageChain {
