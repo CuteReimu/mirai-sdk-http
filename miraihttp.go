@@ -1,12 +1,14 @@
 package miraihttp
 
 import (
+	"context"
 	"encoding/json"
 	"errors"
 	"fmt"
 	"github.com/CuteReimu/goutil"
 	"github.com/gorilla/websocket"
 	"github.com/tidwall/gjson"
+	"golang.org/x/time/rate"
 	"log/slog"
 	"runtime/debug"
 	"strconv"
@@ -123,10 +125,33 @@ type Bot struct {
 	handler     map[string][]listenHandler
 	syncIdMap   sync.Map
 	eventChan   *goutil.BlockingQueue[func()]
+	limiter     atomic.Pointer[limiter]
+}
+
+type limiter struct {
+	limiterType string
+	limiter     *rate.Limiter
+}
+
+func (l *limiter) check() bool {
+	if l.limiterType == "wait" {
+		return l.limiter.Wait(context.Background()) == nil
+	} else {
+		return l.limiter.Allow()
+	}
+}
+
+// SetLimiter 设置限流器，limiterType为"wait"表示等待，为"drop"表示丢弃
+func (b *Bot) SetLimiter(limiterType string, l *rate.Limiter) {
+	b.limiter.Store(&limiter{limiterType: limiterType, limiter: l})
 }
 
 // request 发送请求
 func (b *Bot) request(command, subCommand string, m any) (gjson.Result, error) {
+	limiter := b.limiter.Load()
+	if limiter != nil && !limiter.check() {
+		return gjson.Result{}, errors.New("rate limit exceeded")
+	}
 	msg := &requestMessage{
 		SyncId:     b.syncId.Add(1),
 		Command:    command,

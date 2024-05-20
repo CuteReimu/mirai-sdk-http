@@ -74,3 +74,4 @@ go get -u github.com/CuteReimu/mirai-sdk-http
   - [x] 连接与认证
   - [ ] 断线重连
   - [ ] MiraiCode解析
+  - [x] 请求限流
