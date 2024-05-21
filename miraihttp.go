@@ -103,11 +103,7 @@ func Connect(host string, port int, channel WsChannel, verifyKey string, qq int6
 							}
 						}
 					}
-					if b.eventChan == nil {
-						go fun()
-					} else {
-						b.eventChan.Put(fun)
-					}
+					b.Run(fun)
 				}
 			} else {
 				b.handlerLock.RUnlock()
@@ -144,6 +140,15 @@ func (l *limiter) check() bool {
 // SetLimiter 设置限流器，limiterType为"wait"表示等待，为"drop"表示丢弃
 func (b *Bot) SetLimiter(limiterType string, l *rate.Limiter) {
 	b.limiter.Store(&limiter{limiterType: limiterType, limiter: l})
+}
+
+// Run 如果不是并发方式启动，则此方法会将函数放入事件队列。如果是并发方式启动，则此方法等同于go f()。
+func (b *Bot) Run(f func()) {
+	if b.eventChan == nil {
+		go f()
+	} else {
+		b.eventChan.Put(f)
+	}
 }
 
 // request 发送请求
