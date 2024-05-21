@@ -131,7 +131,11 @@ type limiter struct {
 
 func (l *limiter) check() bool {
 	if l.limiterType == "wait" {
-		return l.limiter.Wait(context.Background()) == nil
+		if err := l.limiter.Wait(context.Background()); err != nil {
+			slog.Error("rate limiter wait error", "error", err)
+			return false
+		}
+		return true
 	} else {
 		return l.limiter.Allow()
 	}
