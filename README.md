@@ -5,6 +5,8 @@
 [![](https://img.shields.io/github/contributors/CuteReimu/mirai-sdk-http)](https://github.com/CuteReimu/mirai-sdk-http/graphs/contributors "贡献者")
 [![](https://img.shields.io/github/license/CuteReimu/mirai-sdk-http)](https://github.com/CuteReimu/mirai-sdk-http/blob/master/LICENSE "许可协议")
 
+**这个库不再维护了，建议改用[onebot](https://github.com/CuteReimu/onebot)库**
+
 这是针对[mirai-api-http](https://github.com/project-mirai/mirai-api-http)编写的Go SDK。
 
 相较于直接使用mirai-core和mirai-console而言，mirai-api-http的好处是，在你更新代码时，你无需进行重新登录。
